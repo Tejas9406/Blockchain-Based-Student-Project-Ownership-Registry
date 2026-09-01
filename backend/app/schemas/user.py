@@ -83,12 +83,30 @@ class UserSummaryResponse(BaseModel):
 
 class LoginResponseData(BaseModel):
     """
-    Payload returned in data field upon successful login.
+    Payload returned in data field upon successful login (API_CONTRACT.md Section 4.2).
     """
     access_token: str = Field(..., description="JWT Bearer access token")
+    refresh_token: str = Field(..., description="JWT refresh token")
     token_type: str = Field(default="bearer", description="Token type")
-    expires_in: int = Field(default=3600, description="Token lifetime in seconds")
+    expires_in: int = Field(default=3600, description="Access token lifetime in seconds")
     user: UserSummaryResponse = Field(..., description="Authenticated user summary")
+
+
+class RefreshTokenRequest(BaseModel):
+    """
+    Schema for token refresh request payload (API_CONTRACT.md Section 4.3).
+    """
+    refresh_token: str = Field(..., min_length=1, description="Valid JWT refresh token")
+
+
+class RefreshTokenResponseData(BaseModel):
+    """
+    Payload returned in data field upon successful token refresh.
+    """
+    access_token: str = Field(..., description="Newly issued JWT access token")
+    refresh_token: str = Field(..., description="Newly rotated JWT refresh token")
+    token_type: str = Field(default="bearer", description="Token type")
+    expires_in: int = Field(default=3600, description="Access token lifetime in seconds")
 
 
 class UserProfileResponse(BaseModel):

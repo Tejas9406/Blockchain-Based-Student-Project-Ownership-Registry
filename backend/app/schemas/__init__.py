@@ -8,6 +8,8 @@ from .common import (
 from .health import DatabaseStatus, HealthCheckResponse
 from .user import (
     LoginResponseData,
+    RefreshTokenRequest,
+    RefreshTokenResponseData,
     UserProfileResponse,
     UserRegisterRequest,
     UserLoginRequest,
@@ -23,6 +25,8 @@ __all__ = [
     "DatabaseStatus",
     "HealthCheckResponse",
     "LoginResponseData",
+    "RefreshTokenRequest",
+    "RefreshTokenResponseData",
     "UserProfileResponse",
     "UserRegisterRequest",
     "UserLoginRequest",

@@ -1,5 +1,6 @@
 import secrets
 from typing import Tuple
+import jwt
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -7,7 +8,13 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.exceptions import AppException, ConflictException, UnauthorizedException
 from app.core.logging import logger
-from app.core.security import create_access_token, hash_password, verify_password
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_refresh_token,
+    hash_password,
+    verify_password,
+)
 from app.models.user import User
 from app.schemas.user import UserLoginRequest, UserRegisterRequest
 from app.utils.identifiers import generate_user_public_id
@@ -92,13 +99,13 @@ def register_user(db: Session, request: UserRegisterRequest) -> User:
         )
 
 
-def authenticate_user(db: Session, request: UserLoginRequest) -> Tuple[User, str, int]:
+def authenticate_user(db: Session, request: UserLoginRequest) -> Tuple[User, str, str, int]:
     """
-    Authenticates user credentials and issues a JWT access token:
+    Authenticates user credentials and issues JWT access and refresh tokens:
     1. Looks up the user by normalized email.
     2. Verifies password with Argon2id.
     3. Handles non-existent users and bad passwords identically to prevent user enumeration.
-    4. Creates and returns (User, access_token, expires_in_seconds).
+    4. Creates and returns (User, access_token, refresh_token, expires_in_seconds).
     """
     normalized_email = request.email.lower().strip()
 
@@ -134,7 +141,64 @@ def authenticate_user(db: Session, request: UserLoginRequest) -> Tuple[User, str
         email=user.email,
         role=user.role,
     )
+    refresh_token = create_refresh_token(
+        subject=user.public_id,
+        email=user.email,
+        role=user.role,
+    )
     expires_in = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
     logger.info(f"User authenticated successfully: public_id={user.public_id}")
-    return user, access_token, expires_in
+    return user, access_token, refresh_token, expires_in
+
+
+def refresh_access_token(db: Session, refresh_token_str: str) -> Tuple[str, str, int]:
+    """
+    Validates a JWT refresh token and issues a new access token and rotated refresh token:
+    1. Validates signature, expiration, and ensures token type is 'refresh'.
+    2. Verifies that the referenced user exists and is active.
+    3. Issues a fresh access token and rotated refresh token.
+    4. Returns (access_token, new_refresh_token, expires_in_seconds).
+    """
+    try:
+        payload = decode_refresh_token(refresh_token_str)
+    except jwt.PyJWTError as exc:
+        logger.warning(f"Token refresh rejected: Invalid or expired token: {str(exc)}")
+        raise UnauthorizedException(
+            code="INVALID_TOKEN",
+            message="Invalid or expired refresh token."
+        )
+
+    user_public_id = payload.get("sub")
+    if not user_public_id:
+        logger.warning("Token refresh rejected: Missing subject in token payload.")
+        raise UnauthorizedException(
+            code="INVALID_TOKEN",
+            message="Invalid or expired refresh token."
+        )
+
+    user = db.execute(
+        select(User).where(User.public_id == user_public_id)
+    ).scalar_one_or_none()
+
+    if not user or not user.is_active:
+        logger.warning(f"Token refresh rejected: User '{user_public_id}' not found or inactive.")
+        raise UnauthorizedException(
+            code="INVALID_TOKEN",
+            message="Invalid or expired refresh token."
+        )
+
+    new_access_token = create_access_token(
+        subject=user.public_id,
+        email=user.email,
+        role=user.role,
+    )
+    new_refresh_token = create_refresh_token(
+        subject=user.public_id,
+        email=user.email,
+        role=user.role,
+    )
+    expires_in = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+
+    logger.info(f"Token successfully refreshed for user public_id={user.public_id}")
+    return new_access_token, new_refresh_token, expires_in

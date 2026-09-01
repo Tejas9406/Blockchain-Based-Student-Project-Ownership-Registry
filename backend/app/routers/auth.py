@@ -5,12 +5,18 @@ from app.database.session import get_db
 from app.schemas.common import ApiErrorResponse, ApiMeta, ApiResponse, get_utc_now_iso
 from app.schemas.user import (
     LoginResponseData,
+    RefreshTokenRequest,
+    RefreshTokenResponseData,
     UserProfileResponse,
     UserRegisterRequest,
     UserLoginRequest,
     UserSummaryResponse,
 )
-from app.services.user_service import authenticate_user, register_user
+from app.services.user_service import (
+    authenticate_user,
+    refresh_access_token,
+    register_user,
+)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -59,7 +65,7 @@ def register(
     response_model=ApiResponse[LoginResponseData],
     status_code=status.HTTP_200_OK,
     summary="User Login",
-    description="Authenticates user credentials, verifies Argon2id password hash, and issues a JWT access token.",
+    description="Authenticates user credentials, verifies Argon2id password hash, and issues a JWT access token and refresh token.",
     responses={
         status.HTTP_200_OK: {
             "model": ApiResponse[LoginResponseData],
@@ -80,16 +86,64 @@ def login(
     payload: UserLoginRequest,
     db: Session = Depends(get_db)
 ) -> ApiResponse[LoginResponseData]:
-    user, access_token, expires_in = authenticate_user(db=db, request=payload)
+    user, access_token, refresh_token_str, expires_in = authenticate_user(db=db, request=payload)
     request_id = getattr(request.state, "request_id", None)
 
     return ApiResponse(
         success=True,
         data=LoginResponseData(
             access_token=access_token,
+            refresh_token=refresh_token_str,
             token_type="bearer",
             expires_in=expires_in,
             user=UserSummaryResponse.model_validate(user)
+        ),
+        meta=ApiMeta(
+            timestamp=get_utc_now_iso(),
+            request_id=request_id
+        )
+    )
+
+
+@router.post(
+    "/refresh",
+    response_model=ApiResponse[RefreshTokenResponseData],
+    status_code=status.HTTP_200_OK,
+    summary="Refresh Access Token",
+    description="Validates a refresh token and issues a new access token and rotated refresh token.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": ApiResponse[RefreshTokenResponseData],
+            "description": "Tokens successfully refreshed.",
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": ApiErrorResponse,
+            "description": "Invalid or expired refresh token.",
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "model": ApiErrorResponse,
+            "description": "Validation failure in request payload.",
+        },
+    }
+)
+def refresh_token(
+    request: Request,
+    payload: RefreshTokenRequest,
+    db: Session = Depends(get_db)
+) -> ApiResponse[RefreshTokenResponseData]:
+    access_token, new_refresh_token, expires_in = refresh_access_token(
+        db=db,
+        refresh_token_str=payload.refresh_token
+    )
+    request_id = getattr(request.state, "request_id", None)
+
+    return ApiResponse(
+        success=True,
+        data=RefreshTokenResponseData(
+            access_token=access_token,
+            refresh_token=new_refresh_token,
+            token_type="bearer",
+            expires_in=expires_in
         ),
         meta=ApiMeta(
             timestamp=get_utc_now_iso(),

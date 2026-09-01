@@ -4,7 +4,11 @@ import jwt
 import pytest
 
 from app.core.config import settings
-from app.core.security import create_access_token, decode_access_token
+from app.core.security import (
+    create_access_token,
+    decode_access_token,
+    decode_refresh_token,
+)
 
 
 @pytest.fixture
@@ -27,7 +31,7 @@ def registered_user(client: TestClient) -> dict:
 
 def test_successful_login_returns_token_and_user(client: TestClient, registered_user: dict):
     """
-    Test 1 & 2: Successful login with valid credentials returns HTTP 200, access token, and user summary.
+    Test 1 & 2: Successful login with valid credentials returns HTTP 200, access token, refresh token, and user summary.
     """
     login_payload = {
         "email": registered_user["email"],
@@ -46,9 +50,15 @@ def test_successful_login_returns_token_and_user(client: TestClient, registered_
 
     token_data = data["data"]
     assert "access_token" in token_data
+    assert "refresh_token" in token_data
     assert token_data["token_type"] == "bearer"
     assert token_data["expires_in"] == 3600
     assert "user" in token_data
+
+    # Verify refresh token is valid
+    decoded_refresh = decode_refresh_token(token_data["refresh_token"])
+    assert decoded_refresh["type"] == "refresh"
+    assert decoded_refresh["email"] == registered_user["email"]
 
     user_info = token_data["user"]
     assert user_info["email"] == registered_user["email"]

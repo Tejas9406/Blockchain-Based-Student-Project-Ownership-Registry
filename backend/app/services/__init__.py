@@ -1,3 +1,3 @@
-from .user_service import authenticate_user, register_user
+from .user_service import authenticate_user, refresh_access_token, register_user
 
-__all__ = ["authenticate_user", "register_user"]
+__all__ = ["authenticate_user", "refresh_access_token", "register_user"]
