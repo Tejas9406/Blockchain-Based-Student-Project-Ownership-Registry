@@ -38,6 +38,11 @@ from app.schemas.project import (
     ProjectOwnerSummary,
     ProjectSummary,
 )
+from app.schemas.project_member import (
+    ProjectMemberCreateRequest,
+    ProjectMemberItem,
+    ProjectMemberResponse,
+)
 
 __all__ = [
     # Common Envelopes
@@ -69,5 +74,10 @@ __all__ = [
     "ProjectSummary",
     "ProjectOwnerSummary",
     "ProjectDetailResponse",
+    # Project Members
+    "ProjectMemberCreateRequest",
+    "ProjectMemberItem",
+    "ProjectMemberResponse",
 ]
+
 
