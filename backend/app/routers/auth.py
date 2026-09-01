@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.orm import Session
 
+from app.api.deps import get_current_user
 from app.database.session import get_db
+from app.models.user import User
 from app.schemas.common import ApiErrorResponse, ApiMeta, ApiResponse, get_utc_now_iso
 from app.schemas.user import (
     LoginResponseData,
@@ -145,6 +147,38 @@ def refresh_token(
             token_type="bearer",
             expires_in=expires_in
         ),
+        meta=ApiMeta(
+            timestamp=get_utc_now_iso(),
+            request_id=request_id
+        )
+    )
+
+
+@router.get(
+    "/me",
+    response_model=ApiResponse[UserSummaryResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Get Current User Profile",
+    description="Retrieves the profile summary of the currently authenticated user using a Bearer access token.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": ApiResponse[UserSummaryResponse],
+            "description": "User profile successfully retrieved.",
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": ApiErrorResponse,
+            "description": "Missing, expired, or invalid access token.",
+        },
+    }
+)
+def get_me(
+    request: Request,
+    current_user: User = Depends(get_current_user)
+) -> ApiResponse[UserSummaryResponse]:
+    request_id = getattr(request.state, "request_id", None)
+    return ApiResponse(
+        success=True,
+        data=UserSummaryResponse.model_validate(current_user),
         meta=ApiMeta(
             timestamp=get_utc_now_iso(),
             request_id=request_id
