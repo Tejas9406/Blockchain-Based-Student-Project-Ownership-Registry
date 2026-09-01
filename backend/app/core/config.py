@@ -47,6 +47,11 @@ class Settings(BaseSettings):
             return v
         return []
 
+    # JWT Authentication Settings
+    JWT_SECRET_KEY: str = "dev_insecure_jwt_secret_key_change_in_production_sih2026_cyb05"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
     # Blockchain Provider URI
     WEB3_PROVIDER_URI: str = "http://127.0.0.1:8545"
 

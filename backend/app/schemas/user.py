@@ -51,6 +51,46 @@ class UserRegisterRequest(BaseModel):
         return trimmed
 
 
+class UserLoginRequest(BaseModel):
+    """
+    Schema for user login credentials.
+    Strictly accepts only email and plaintext password.
+    Disallows internal IDs, password hashes, roles, wallet addresses, or admin fields.
+    """
+    email: EmailStr = Field(..., description="Registered email address")
+    password: str = Field(..., min_length=1, description="Account password")
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        return v.lower().strip()
+
+
+class UserSummaryResponse(BaseModel):
+    """
+    Public User summary returned upon authentication.
+    Strictly excludes internal UUID, password, and password_hash.
+    """
+    public_id: str = Field(..., description="Public user identifier (USR-YYYYMM-XXXXX)")
+    email: str = Field(..., description="Normalized email address")
+    full_name: str = Field(..., description="Full legal name of the user")
+    role: str = Field(..., description="Assigned role")
+    institution_id: str = Field(..., description="Institutional student/faculty ID")
+    department: str = Field(..., description="Academic department")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LoginResponseData(BaseModel):
+    """
+    Payload returned in data field upon successful login.
+    """
+    access_token: str = Field(..., description="JWT Bearer access token")
+    token_type: str = Field(default="bearer", description="Token type")
+    expires_in: int = Field(default=3600, description="Token lifetime in seconds")
+    user: UserSummaryResponse = Field(..., description="Authenticated user summary")
+
+
 class UserProfileResponse(BaseModel):
     """
     Public User Profile response schema.

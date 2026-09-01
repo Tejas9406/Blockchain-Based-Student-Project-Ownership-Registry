@@ -1,14 +1,19 @@
 import secrets
+from typing import Tuple
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import AppException, ConflictException
+from app.core.config import settings
+from app.core.exceptions import AppException, ConflictException, UnauthorizedException
 from app.core.logging import logger
-from app.core.security import hash_password
+from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
-from app.schemas.user import UserRegisterRequest
+from app.schemas.user import UserLoginRequest, UserRegisterRequest
 from app.utils.identifiers import generate_user_public_id
+
+# Dummy hash for constant-time defense against timing attacks during failed lookups
+DUMMY_TIMING_HASH = "$argon2id$v=19$m=65536,t=3,p=4$dHBhboMIGkw3vpFXx3pyZg$+YOXfuyOi5u/Uj7zzAuqrBN5usg2OZEnv3zwgtU0Qrc"
 
 
 def register_user(db: Session, request: UserRegisterRequest) -> User:
@@ -85,3 +90,51 @@ def register_user(db: Session, request: UserRegisterRequest) -> User:
             code="REGISTRATION_FAILED",
             message="An unexpected error occurred while creating the user account. Please try again."
         )
+
+
+def authenticate_user(db: Session, request: UserLoginRequest) -> Tuple[User, str, int]:
+    """
+    Authenticates user credentials and issues a JWT access token:
+    1. Looks up the user by normalized email.
+    2. Verifies password with Argon2id.
+    3. Handles non-existent users and bad passwords identically to prevent user enumeration.
+    4. Creates and returns (User, access_token, expires_in_seconds).
+    """
+    normalized_email = request.email.lower().strip()
+
+    user = db.execute(
+        select(User).where(User.email == normalized_email)
+    ).scalar_one_or_none()
+
+    if not user:
+        # Constant-time mitigation against email enumeration
+        verify_password("dummy_constant_time_pass", DUMMY_TIMING_HASH)
+        logger.warning("Authentication failed: Account not found.")
+        raise UnauthorizedException(
+            code="INVALID_CREDENTIALS",
+            message="Invalid email or password."
+        )
+
+    if not verify_password(request.password, user.hashed_password):
+        logger.warning(f"Authentication failed: Password mismatch for user public_id={user.public_id}.")
+        raise UnauthorizedException(
+            code="INVALID_CREDENTIALS",
+            message="Invalid email or password."
+        )
+
+    if not user.is_active:
+        logger.warning(f"Authentication failed: Inactive account user public_id={user.public_id}.")
+        raise UnauthorizedException(
+            code="INVALID_CREDENTIALS",
+            message="Invalid email or password."
+        )
+
+    access_token = create_access_token(
+        subject=user.public_id,
+        email=user.email,
+        role=user.role,
+    )
+    expires_in = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+
+    logger.info(f"User authenticated successfully: public_id={user.public_id}")
+    return user, access_token, expires_in

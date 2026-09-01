@@ -35,6 +35,22 @@ class ConflictException(AppException):
         )
 
 
+class UnauthorizedException(AppException):
+    """HTTP 401 Unauthorized Exception."""
+    def __init__(
+        self,
+        message: str = "Invalid email or password.",
+        code: str = "INVALID_CREDENTIALS",
+        details: Optional[Dict[str, Any]] = None,
+    ):
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            code=code,
+            message=message,
+            details=details,
+        )
+
+
 class ValidationException(AppException):
     """HTTP 422 Unprocessable Entity Exception."""
     def __init__(

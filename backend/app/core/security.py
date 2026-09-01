@@ -1,9 +1,9 @@
 """
-Password Security & Cryptographic Hashing Module.
+Password Security & Cryptographic Hashing Module + JWT Token Generation.
 
-Implements Argon2id password hashing and verification in accordance with:
-- docs/architecture/INTEGRATION_CONTRACT.md (Section 5.1)
-- docs/database/DATABASE_DESIGN.md (Section 3)
+Implements:
+- Argon2id password hashing and verification (DATABASE_DESIGN.md Section 3, INTEGRATION_CONTRACT.md Section 5.1)
+- JWT access token generation and decoding (API_CONTRACT.md Section 4.2, INTEGRATION_CONTRACT.md Section 5.1)
 
 Argon2id configuration parameters:
 - Algorithm: Argon2id (Type.ID)
@@ -14,6 +14,8 @@ Argon2id configuration parameters:
 - Hash length: 32 bytes
 """
 
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, Optional
 import argon2
 from argon2 import PasswordHasher, Type
 from argon2.exceptions import (
@@ -21,6 +23,9 @@ from argon2.exceptions import (
     VerificationError,
     VerifyMismatchError,
 )
+import jwt
+
+from app.core.config import settings
 
 # Initialize Argon2id PasswordHasher with project-specified secure parameters
 _hasher = PasswordHasher(
@@ -77,3 +82,66 @@ def verify_password(password: str, password_hash: str) -> bool:
         return False
     except Exception:
         return False
+
+
+def create_access_token(
+    subject: str,
+    email: str,
+    role: str,
+    expires_delta: Optional[timedelta] = None
+) -> str:
+    """
+    Generates a cryptographically signed JWT access token.
+    Claims strictly limited to: sub, email, role, type, iat, exp.
+    Never includes password, password_hash, or sensitive internals.
+
+    Args:
+        subject: Subject identifier (user public_id: USR-YYYYMM-XXXXX).
+        email: User's normalized email address.
+        role: User role (e.g. STUDENT).
+        expires_delta: Optional custom expiration duration.
+
+    Returns:
+        Encoded JWT token string.
+    """
+    now = datetime.now(timezone.utc)
+    if expires_delta:
+        expire = now + expires_delta
+    else:
+        expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    payload: Dict[str, Any] = {
+        "sub": subject,
+        "email": email,
+        "role": role,
+        "type": "access",
+        "iat": int(now.timestamp()),
+        "exp": int(expire.timestamp()),
+    }
+
+    return jwt.encode(
+        payload,
+        settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+    )
+
+
+def decode_access_token(token: str) -> Dict[str, Any]:
+    """
+    Decodes and validates a JWT access token signature, algorithm, and standard claims.
+
+    Args:
+        token: The encoded JWT access token string.
+
+    Returns:
+        The decoded payload dictionary.
+
+    Raises:
+        jwt.PyJWTError: If signature, algorithm, or claims are invalid or expired.
+    """
+    return jwt.decode(
+        token,
+        settings.JWT_SECRET_KEY,
+        algorithms=[settings.JWT_ALGORITHM],
+        options={"require": ["sub", "email", "role", "type", "iat", "exp"]}
+    )
