@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.database.session import get_db
 from app.models.user import User
-from app.schemas.common import ApiErrorResponse, ApiMeta, ApiResponse, get_utc_now_iso
+from app.schemas.common import ApiMeta, ApiResponse, get_utc_now_iso
+from app.schemas.error import ApiErrorResponse
 from app.schemas.user import (
     LoginResponseData,
     RefreshTokenRequest,
@@ -42,23 +43,23 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
             "model": ApiErrorResponse,
             "description": "Validation failure in request payload.",
         },
-    }
+    },
 )
 def register(
     request: Request,
     payload: UserRegisterRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> ApiResponse[UserProfileResponse]:
     user = register_user(db=db, request=payload)
     request_id = getattr(request.state, "request_id", None)
-    
+
     return ApiResponse(
         success=True,
         data=UserProfileResponse.model_validate(user),
         meta=ApiMeta(
             timestamp=get_utc_now_iso(),
-            request_id=request_id
-        )
+            request_id=request_id,
+        ),
     )
 
 
@@ -81,14 +82,16 @@ def register(
             "model": ApiErrorResponse,
             "description": "Validation failure in request payload.",
         },
-    }
+    },
 )
 def login(
     request: Request,
     payload: UserLoginRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> ApiResponse[LoginResponseData]:
-    user, access_token, refresh_token_str, expires_in = authenticate_user(db=db, request=payload)
+    user, access_token, refresh_token_str, expires_in = authenticate_user(
+        db=db, request=payload
+    )
     request_id = getattr(request.state, "request_id", None)
 
     return ApiResponse(
@@ -98,12 +101,12 @@ def login(
             refresh_token=refresh_token_str,
             token_type="bearer",
             expires_in=expires_in,
-            user=UserSummaryResponse.model_validate(user)
+            user=UserSummaryResponse.model_validate(user),
         ),
         meta=ApiMeta(
             timestamp=get_utc_now_iso(),
-            request_id=request_id
-        )
+            request_id=request_id,
+        ),
     )
 
 
@@ -126,16 +129,15 @@ def login(
             "model": ApiErrorResponse,
             "description": "Validation failure in request payload.",
         },
-    }
+    },
 )
 def refresh_token(
     request: Request,
     payload: RefreshTokenRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> ApiResponse[RefreshTokenResponseData]:
     access_token, new_refresh_token, expires_in = refresh_access_token(
-        db=db,
-        refresh_token_str=payload.refresh_token
+        db=db, refresh_token_str=payload.refresh_token
     )
     request_id = getattr(request.state, "request_id", None)
 
@@ -145,12 +147,12 @@ def refresh_token(
             access_token=access_token,
             refresh_token=new_refresh_token,
             token_type="bearer",
-            expires_in=expires_in
+            expires_in=expires_in,
         ),
         meta=ApiMeta(
             timestamp=get_utc_now_iso(),
-            request_id=request_id
-        )
+            request_id=request_id,
+        ),
     )
 
 
@@ -169,11 +171,11 @@ def refresh_token(
             "model": ApiErrorResponse,
             "description": "Missing, expired, or invalid access token.",
         },
-    }
+    },
 )
 def get_me(
     request: Request,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> ApiResponse[UserSummaryResponse]:
     request_id = getattr(request.state, "request_id", None)
     return ApiResponse(
@@ -181,6 +183,6 @@ def get_me(
         data=UserSummaryResponse.model_validate(current_user),
         meta=ApiMeta(
             timestamp=get_utc_now_iso(),
-            request_id=request_id
-        )
+            request_id=request_id,
+        ),
     )

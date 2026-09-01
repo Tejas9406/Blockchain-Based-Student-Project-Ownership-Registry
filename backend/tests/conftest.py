@@ -30,10 +30,11 @@ def setup_test_db():
     Base.metadata.drop_all(bind=test_engine)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def db_session() -> Generator[Session, None, None]:
     """
-    Yields a clean test database session for each test function, rolling back changes.
+    Provides an isolated database session per test by executing within a rolled-back transaction.
+    Ensures zero state leakage between test executions.
     """
     connection = test_engine.connect()
     transaction = connection.begin()
@@ -47,7 +48,7 @@ def db_session() -> Generator[Session, None, None]:
     connection.close()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def client(db_session: Session) -> Generator[TestClient, None, None]:
     """
     TestClient fixture that overrides the get_db dependency with the test session.
