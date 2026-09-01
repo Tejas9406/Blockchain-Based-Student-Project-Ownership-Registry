@@ -13,6 +13,7 @@ from app.api.dependencies import (
 )
 from app.api.deps import (
     get_current_user,
+    get_optional_current_user,
     http_bearer,
     require_admin,
     require_faculty,
@@ -29,6 +30,7 @@ __all__ = [
     "get_pagination_params",
     "get_request_id",
     "get_current_user",
+    "get_optional_current_user",
     "http_bearer",
     "require_admin",
     "require_faculty",
