@@ -89,12 +89,13 @@ def require_role(*allowed_roles: Union[UserRole, str]) -> Callable[[User], User]
         def my_route(current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.FACULTY))):
     """
     valid_roles: Set[str] = {
-        role.value if isinstance(role, UserRole) else str(role)
+        role.value if hasattr(role, "value") else str(role)
         for role in allowed_roles
     }
 
     def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in valid_roles:
+        user_role_val = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
+        if user_role_val not in valid_roles and current_user.role not in valid_roles:
             logger.warning(
                 f"Authorization failed: User '{current_user.public_id}' with role '{current_user.role}' "
                 f"attempted to access an endpoint requiring one of: {sorted(list(valid_roles))}."
@@ -105,6 +106,7 @@ def require_role(*allowed_roles: Union[UserRole, str]) -> Callable[[User], User]
             )
         return current_user
 
+
     return role_checker
 
 
@@ -113,3 +115,34 @@ require_student = require_role(UserRole.STUDENT)
 require_faculty = require_role(UserRole.FACULTY)
 require_admin = require_role(UserRole.ADMIN)
 require_verifier = require_role(UserRole.VERIFIER)
+
+
+def get_optional_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """
+    FastAPI dependency for optionally extracting the authenticated User.
+    Returns User if valid Bearer token is present, otherwise returns None.
+    Does not raise 401 exceptions on missing or malformed tokens.
+    """
+    if not credentials or not credentials.credentials:
+        return None
+
+    try:
+        payload = decode_access_token(credentials.credentials)
+        user_public_id = payload.get("sub")
+        if not user_public_id:
+            return None
+
+        user = db.execute(
+            select(User).where(User.public_id == user_public_id)
+        ).scalar_one_or_none()
+
+        if user and user.is_active:
+            return user
+    except Exception:
+        return None
+
+    return None
+

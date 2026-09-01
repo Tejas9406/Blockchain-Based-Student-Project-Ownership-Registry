@@ -32,6 +32,13 @@ from app.schemas.user import (
     UserSummaryResponse,
 )
 
+from app.schemas.project import (
+    ProjectCreateRequest,
+    ProjectDetailResponse,
+    ProjectOwnerSummary,
+    ProjectSummary,
+)
+
 __all__ = [
     # Common Envelopes
     "ApiMeta",
@@ -57,4 +64,10 @@ __all__ = [
     "UserLoginRequest",
     "UserRole",
     "UserSummaryResponse",
+    # Projects
+    "ProjectCreateRequest",
+    "ProjectSummary",
+    "ProjectOwnerSummary",
+    "ProjectDetailResponse",
 ]
+

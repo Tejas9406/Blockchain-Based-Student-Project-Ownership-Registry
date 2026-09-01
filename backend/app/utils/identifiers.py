@@ -11,3 +11,14 @@ def generate_user_public_id() -> str:
     year_month = now.strftime("%Y%m")
     random_hex = secrets.token_hex(3)[:5].upper()
     return f"USR-{year_month}-{random_hex}"
+
+
+def generate_project_public_id() -> str:
+    """
+    Generates a public project identifier conforming to DATABASE_DESIGN.md Section 7.
+    Format: PRJ-YYYYMM-XXXXX (e.g. PRJ-202609-99B12)
+    """
+    now = datetime.now(timezone.utc)
+    year_month = now.strftime("%Y%m")
+    random_hex = secrets.token_hex(3)[:5].upper()
+    return f"PRJ-{year_month}-{random_hex}"
