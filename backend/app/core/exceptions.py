@@ -51,6 +51,22 @@ class UnauthorizedException(AppException):
         )
 
 
+class ForbiddenException(AppException):
+    """HTTP 403 Forbidden Exception."""
+    def __init__(
+        self,
+        message: str = "You do not have permission to perform this action.",
+        code: str = "FORBIDDEN",
+        details: Optional[Dict[str, Any]] = None,
+    ):
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            code=code,
+            message=message,
+            details=details,
+        )
+
+
 class ValidationException(AppException):
     """HTTP 422 Unprocessable Entity Exception."""
     def __init__(

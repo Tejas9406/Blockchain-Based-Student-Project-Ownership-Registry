@@ -1,15 +1,16 @@
-from typing import Optional
+from typing import Callable, Optional, Set, Union
 import jwt
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import UnauthorizedException
+from app.core.exceptions import ForbiddenException, UnauthorizedException
 from app.core.logging import logger
 from app.core.security import decode_access_token
 from app.database.session import get_db
 from app.models.user import User
+from app.schemas.user import UserRole
 
 # HTTPBearer security scheme (auto_error=False allows custom exception formatting)
 http_bearer = HTTPBearer(auto_error=False)
@@ -72,3 +73,43 @@ def get_current_user(
         )
 
     return user
+
+
+def require_role(*allowed_roles: Union[UserRole, str]) -> Callable[[User], User]:
+    """
+    FastAPI dependency factory for Role-Based Access Control (RBAC).
+
+    Enforces that the authenticated user possesses one of the specified allowed roles.
+    Reuses get_current_user() for authentication.
+    Returns 401 Unauthorized if unauthenticated, or 403 Forbidden if the authenticated user's role is insufficient.
+
+    Usage:
+        @router.get("/admin", dependencies=[Depends(require_role(UserRole.ADMIN))])
+        or
+        def my_route(current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.FACULTY))):
+    """
+    valid_roles: Set[str] = {
+        role.value if isinstance(role, UserRole) else str(role)
+        for role in allowed_roles
+    }
+
+    def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in valid_roles:
+            logger.warning(
+                f"Authorization failed: User '{current_user.public_id}' with role '{current_user.role}' "
+                f"attempted to access an endpoint requiring one of: {sorted(list(valid_roles))}."
+            )
+            raise ForbiddenException(
+                code="FORBIDDEN",
+                message="You do not have permission to perform this action."
+            )
+        return current_user
+
+    return role_checker
+
+
+# Named single-role dependencies for clean dependency injection
+require_student = require_role(UserRole.STUDENT)
+require_faculty = require_role(UserRole.FACULTY)
+require_admin = require_role(UserRole.ADMIN)
+require_verifier = require_role(UserRole.VERIFIER)
