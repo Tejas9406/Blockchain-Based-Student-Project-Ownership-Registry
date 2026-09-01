@@ -1,22 +1,43 @@
 """
 Pydantic Schemas Package.
 
-Exports standard response envelopes, pagination, error schemas, and health check models.
+Exports standard response envelopes, pagination, error schemas, health check models, and authentication schemas.
 """
 
-from app.schemas.common import ApiMeta, ApiResponse
+from app.schemas.common import (
+    ApiMeta,
+    ApiResponse,
+    get_utc_now_iso,
+    format_iso_utc,
+)
+from app.schemas.error import (
+    ApiErrorDetail,
+    ApiErrorResponse,
+)
+
 from app.schemas.pagination import (
     PaginatedMeta,
     ApiPaginatedResponse,
     PaginationParams,
 )
-from app.schemas.error import ApiErrorDetail, ApiErrorResponse
 from app.schemas.health import HealthCheckResponse, DatabaseStatus
+from app.schemas.user import (
+    LoginResponseData,
+    RefreshTokenRequest,
+    RefreshTokenResponseData,
+    UserProfileResponse,
+    UserRegisterRequest,
+    UserLoginRequest,
+    UserRole,
+    UserSummaryResponse,
+)
 
 __all__ = [
     # Common Envelopes
     "ApiMeta",
     "ApiResponse",
+    "get_utc_now_iso",
+    "format_iso_utc",
     # Pagination
     "PaginatedMeta",
     "ApiPaginatedResponse",
@@ -27,4 +48,13 @@ __all__ = [
     # Health
     "HealthCheckResponse",
     "DatabaseStatus",
+    # Authentication & User
+    "LoginResponseData",
+    "RefreshTokenRequest",
+    "RefreshTokenResponseData",
+    "UserProfileResponse",
+    "UserRegisterRequest",
+    "UserLoginRequest",
+    "UserRole",
+    "UserSummaryResponse",
 ]

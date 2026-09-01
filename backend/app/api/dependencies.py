@@ -34,39 +34,10 @@ def get_pagination_params(
 
 
 # ==============================================================================
-# Authentication & Role Dependency Placeholders (Phase 3 Hook Locations)
+# Authentication & Role Dependencies (Integrated from Phase 3 Auth)
 # ==============================================================================
 
-
-async def get_current_user(
-    db: Annotated[Session, Depends(get_db)],
-    request: Request,
-) -> User:
-    """
-    Dependency placeholder for authenticating JWT Bearer token and retrieving the active User.
-    Full implementation will be added in Backend Phase 3 (Authentication & RBAC).
-    """
-    raise NotImplementedAppError(
-        message="Authentication subsystem is not yet implemented (scheduled for Phase 3).",
-        code="AUTH_NOT_IMPLEMENTED",
-    )
-
-
-def require_role(*allowed_roles: UserRole):
-    """
-    Dependency factory placeholder for Role-Based Access Control (RBAC).
-    """
-
-    async def role_checker(
-        current_user: Annotated[User, Depends(get_current_user)],
-    ) -> User:
-        raise NotImplementedAppError(
-            message="Role authorization subsystem is not yet implemented (scheduled for Phase 3).",
-            code="AUTH_NOT_IMPLEMENTED",
-        )
-
-    return role_checker
-
+from app.api.deps import get_current_user, require_role, http_bearer
 
 # Type aliases for clean endpoint dependency injection
 DbSession = Annotated[Session, Depends(get_db)]

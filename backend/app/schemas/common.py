@@ -4,6 +4,12 @@ from pydantic import BaseModel, Field
 from app.utils.time import format_iso_utc
 
 DataT = TypeVar("DataT")
+T = DataT  # Backward compatibility alias
+
+
+def get_utc_now_iso() -> str:
+    """Returns current UTC timestamp formatted as ISO 8601 string."""
+    return format_iso_utc()
 
 
 class ApiMeta(BaseModel):
@@ -24,7 +30,7 @@ class ApiMeta(BaseModel):
 
 class ApiResponse(BaseModel, Generic[DataT]):
     """
-    Universal Success Response Envelope conforming to frozen contract.
+    Universal Success Response Envelope conforming to frozen contract (API_CONTRACT.md Section 3.1).
     """
     success: bool = Field(
         default=True,
@@ -38,3 +44,13 @@ class ApiResponse(BaseModel, Generic[DataT]):
         default_factory=ApiMeta,
         description="Response metadata",
     )
+
+
+__all__ = [
+    "ApiMeta",
+    "ApiResponse",
+    "get_utc_now_iso",
+    "format_iso_utc",
+    "DataT",
+    "T",
+]

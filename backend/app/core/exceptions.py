@@ -3,13 +3,13 @@ from typing import Any, Optional
 
 class AppException(Exception):
     """
-    Base Application Exception.
+    Base Application Exception adhering to the universal error envelope specification.
     All business logic and operational exceptions should inherit from or instantiate this class.
     """
 
     def __init__(
         self,
-        message: str,
+        message: str = "An application error occurred.",
         code: str = "BAD_REQUEST",
         status_code: int = 400,
         details: Optional[Any] = None,
@@ -36,6 +36,9 @@ class NotFoundError(AppException):
         super().__init__(message=message, code=code, status_code=404, details=details)
 
 
+NotFoundException = NotFoundError
+
+
 class UnauthorizedError(AppException):
     """Authentication required or failed (HTTP 401)."""
 
@@ -46,6 +49,18 @@ class UnauthorizedError(AppException):
         details: Optional[Any] = None,
     ):
         super().__init__(message=message, code=code, status_code=401, details=details)
+
+
+class UnauthorizedException(UnauthorizedError):
+    """HTTP 401 Unauthorized Exception (Authentication subsystem)."""
+
+    def __init__(
+        self,
+        message: str = "Invalid email or password.",
+        code: str = "INVALID_CREDENTIALS",
+        details: Optional[Any] = None,
+    ):
+        super().__init__(message=message, code=code, details=details)
 
 
 class ForbiddenError(AppException):
@@ -60,6 +75,11 @@ class ForbiddenError(AppException):
         super().__init__(message=message, code=code, status_code=403, details=details)
 
 
+class ForbiddenException(ForbiddenError):
+    """HTTP 403 Forbidden Exception."""
+    pass
+
+
 class ConflictError(AppException):
     """Resource state conflict, e.g. duplicate key (HTTP 409)."""
 
@@ -72,6 +92,18 @@ class ConflictError(AppException):
         super().__init__(message=message, code=code, status_code=409, details=details)
 
 
+class ConflictException(ConflictError):
+    """HTTP 409 Conflict Exception."""
+
+    def __init__(
+        self,
+        message: str = "A resource with these details already exists.",
+        code: str = "RESOURCE_CONFLICT",
+        details: Optional[Any] = None,
+    ):
+        super().__init__(message=message, code=code, details=details)
+
+
 class ValidationAppError(AppException):
     """Custom validation failure (HTTP 422)."""
 
@@ -82,6 +114,18 @@ class ValidationAppError(AppException):
         details: Optional[Any] = None,
     ):
         super().__init__(message=message, code=code, status_code=422, details=details)
+
+
+class ValidationException(ValidationAppError):
+    """HTTP 422 Unprocessable Entity Exception."""
+
+    def __init__(
+        self,
+        message: str = "Request validation failed.",
+        code: str = "VALIDATION_ERROR",
+        details: Optional[Any] = None,
+    ):
+        super().__init__(message=message, code=code, details=details)
 
 
 class NotImplementedAppError(AppException):
@@ -106,3 +150,20 @@ class InternalServerError(AppException):
         details: Optional[Any] = None,
     ):
         super().__init__(message=message, code=code, status_code=500, details=details)
+
+
+__all__ = [
+    "AppException",
+    "NotFoundError",
+    "NotFoundException",
+    "UnauthorizedError",
+    "UnauthorizedException",
+    "ForbiddenError",
+    "ForbiddenException",
+    "ConflictError",
+    "ConflictException",
+    "ValidationAppError",
+    "ValidationException",
+    "NotImplementedAppError",
+    "InternalServerError",
+]

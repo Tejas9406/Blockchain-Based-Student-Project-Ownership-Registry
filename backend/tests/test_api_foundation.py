@@ -298,10 +298,6 @@ def test_openapi_and_docs_endpoints(client: TestClient):
 
 def test_router_placeholders(client: TestClient):
     """Test 13: Domain router placeholders return 501 Not Implemented."""
-    res_auth = client.post("/api/v1/auth/register")
-    assert res_auth.status_code == 501
-    assert res_auth.json()["error"]["code"] == "AUTH_NOT_IMPLEMENTED"
-
     res_proj = client.get("/api/v1/projects")
     assert res_proj.status_code == 501
     assert res_proj.json()["error"]["code"] == "PROJECTS_NOT_IMPLEMENTED"
@@ -320,3 +316,4 @@ def test_router_placeholders(client: TestClient):
 
     res_adm = client.get("/api/v1/admin/audit-logs")
     assert res_adm.status_code == 501
+

@@ -1,20 +1,33 @@
 from typing import Generator
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from app.main import app
-from app.database.session import SessionLocal, engine
 from app.database.base import Base
+from app.database.session import get_db
+from app.main import app
+
+# Create in-memory SQLite database for test isolation
+SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///:memory:"
+
+test_engine = create_engine(
+    SQLALCHEMY_TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 
-@pytest.fixture(scope="session")
-def client() -> Generator[TestClient, None, None]:
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_db():
     """
-    TestClient fixture for executing synchronous API requests against the FastAPI app.
+    Create database tables before running test session, and drop them after.
     """
-    with TestClient(app) as test_client:
-        yield test_client
+    Base.metadata.create_all(bind=test_engine)
+    yield
+    Base.metadata.drop_all(bind=test_engine)
 
 
 @pytest.fixture(scope="function")
@@ -23,9 +36,9 @@ def db_session() -> Generator[Session, None, None]:
     Provides an isolated database session per test by executing within a rolled-back transaction.
     Ensures zero state leakage between test executions.
     """
-    connection = engine.connect()
+    connection = test_engine.connect()
     transaction = connection.begin()
-    session = SessionLocal(bind=connection)
+    session = TestingSessionLocal(bind=connection)
 
     yield session
 
@@ -33,3 +46,20 @@ def db_session() -> Generator[Session, None, None]:
     if transaction.is_active:
         transaction.rollback()
     connection.close()
+
+
+@pytest.fixture(scope="function")
+def client(db_session: Session) -> Generator[TestClient, None, None]:
+    """
+    TestClient fixture that overrides the get_db dependency with the test session.
+    """
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()

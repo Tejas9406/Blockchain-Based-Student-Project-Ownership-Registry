@@ -1,4 +1,3 @@
-"""
-Business Services Package.
-Contains domain services (IPFS, Blockchain, Proof, Verification, Certificate) to be implemented in subsequent phases.
-"""
+from .user_service import authenticate_user, refresh_access_token, register_user
+
+__all__ = ["authenticate_user", "refresh_access_token", "register_user"]
