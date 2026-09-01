@@ -1,8 +1,8 @@
-from typing import Annotated, Optional
+from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_optional_current_user, require_role
+from app.api.deps import get_current_user, get_optional_current_user, require_role
 from app.database.session import get_db
 from app.models.enums import ProjectVersionStage, UserRole
 from app.models.user import User
@@ -10,6 +10,11 @@ from app.schemas.common import ApiMeta, ApiResponse, get_utc_now_iso
 from app.schemas.error import ApiErrorResponse
 from app.schemas.pagination import ApiPaginatedResponse, PaginatedMeta
 from app.schemas.project import ProjectCreateRequest, ProjectSummary
+from app.schemas.project_member import ProjectMemberCreateRequest, ProjectMemberItem
+from app.services.project_member_service import (
+    add_project_member,
+    list_project_members,
+)
 from app.services.project_service import (
     create_project,
     get_project_by_identifier,
@@ -154,6 +159,104 @@ def get_project_details(
     return ApiResponse(
         success=True,
         data=project,
+        meta=ApiMeta(
+            timestamp=get_utc_now_iso(),
+            request_id=request_id,
+        ),
+    )
+
+
+@router.get(
+    "/{project_id}/members",
+    response_model=ApiResponse[List[ProjectMemberItem]],
+    status_code=status.HTTP_200_OK,
+    summary="List Project Members",
+    description="Retrieves the list of team members, mentors, and the project lead for the specified project.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": ApiResponse[List[ProjectMemberItem]],
+            "description": "Project members retrieved successfully.",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "model": ApiErrorResponse,
+            "description": "The requested project identifier does not exist.",
+        },
+    },
+)
+def get_project_members(
+    request: Request,
+    project_id: str,
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db),
+) -> ApiResponse[List[ProjectMemberItem]]:
+    members = list_project_members(
+        db=db,
+        project_identifier=project_id,
+        current_user=current_user,
+    )
+    request_id = getattr(request.state, "request_id", None)
+
+    return ApiResponse(
+        success=True,
+        data=members,
+        meta=ApiMeta(
+            timestamp=get_utc_now_iso(),
+            request_id=request_id,
+        ),
+    )
+
+
+@router.post(
+    "/{project_id}/members",
+    response_model=ApiResponse[ProjectMemberItem],
+    status_code=status.HTTP_201_CREATED,
+    summary="Add Project Team Member",
+    description="Adds or invites a registered student contributor or faculty mentor to the project team. Requires project owner/lead permissions.",
+    responses={
+        status.HTTP_201_CREATED: {
+            "model": ApiResponse[ProjectMemberItem],
+            "description": "Project member successfully added.",
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": ApiErrorResponse,
+            "description": "Authentication credentials missing or invalid.",
+        },
+        status.HTTP_403_FORBIDDEN: {
+            "model": ApiErrorResponse,
+            "description": "Caller is not authorized to manage project members.",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "model": ApiErrorResponse,
+            "description": "Project or target user not found.",
+        },
+        status.HTTP_409_CONFLICT: {
+            "model": ApiErrorResponse,
+            "description": "User is already a member of this project.",
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "model": ApiErrorResponse,
+            "description": "Validation failure in request payload.",
+        },
+    },
+)
+def add_member_to_project(
+    request: Request,
+    project_id: str,
+    payload: ProjectMemberCreateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ApiResponse[ProjectMemberItem]:
+    member = add_project_member(
+        db=db,
+        project_identifier=project_id,
+        current_user=current_user,
+        request=payload,
+    )
+    request_id = getattr(request.state, "request_id", None)
+
+    return ApiResponse(
+        success=True,
+        data=member,
         meta=ApiMeta(
             timestamp=get_utc_now_iso(),
             request_id=request_id,
