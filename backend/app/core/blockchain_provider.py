@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict
 
 
@@ -21,6 +21,13 @@ class OnChainVerificationResult(BaseModel):
     block_number: Optional[int] = None
     smart_contract_address: Optional[str] = None
     match_confirmed: bool = False
+    composite_hash: Optional[str] = None
+    version_index: Optional[int] = None
+    lifecycle_stage: Optional[str] = None
+    co_authors: Optional[list[str]] = None
+    record_id: Optional[int] = None
+    exists: bool = True
+    mismatch_reason: Optional[str] = None
 
 
 class BlockchainVerificationProvider(ABC):
@@ -30,16 +37,19 @@ class BlockchainVerificationProvider(ABC):
     Developer 3 will implement the concrete Web3.py provider in Phase 5.
     """
 
-    @abstractmethod
     async def verify_project_version(
         self, registration_id: str, expected_hash: Optional[str] = None
     ) -> Optional[OnChainVerificationResult]:
+        return None
+
+    async def get_project_version(
+        self, registration_id: str
+    ) -> Optional[Dict[str, Any]]:
         """
-        Queries blockchain state for the specified registration_id and compares
-        it against expected_hash if provided.
-        Returns None if no on-chain record exists.
+        Retrieves the full on-chain VersionProof record for registration_id.
+        Returns None if no on-chain record exists or contract is unconfigured.
         """
-        pass
+        return None
 
 
 class DefaultBlockchainVerificationProvider(BlockchainVerificationProvider):
@@ -52,6 +62,11 @@ class DefaultBlockchainVerificationProvider(BlockchainVerificationProvider):
     async def verify_project_version(
         self, registration_id: str, expected_hash: Optional[str] = None
     ) -> Optional[OnChainVerificationResult]:
+        return None
+
+    async def get_project_version(
+        self, registration_id: str
+    ) -> Optional[Dict[str, Any]]:
         return None
 
 
@@ -95,8 +110,64 @@ class Web3BlockchainVerificationProvider(BlockchainVerificationProvider):
                 smart_contract_address=res["smart_contract_address"],
                 match_confirmed=res["match_confirmed"],
             )
-        except Exception:
+        except Exception as e:
+            from app.core.exceptions import BlockchainException
+            if isinstance(e, BlockchainException):
+                raise
+            err_str = str(e).lower()
+            if "timeout" in err_str or "timed out" in err_str:
+                raise BlockchainException(
+                    code="BLOCKCHAIN_TIMEOUT",
+                    message=f"Blockchain call timed out: {str(e)}",
+                    status_code=504,
+                )
+            if "connection" in err_str or "refused" in err_str:
+                raise BlockchainException(
+                    code="BLOCKCHAIN_CONNECTION_ERROR",
+                    message=f"RPC connection failed: {str(e)}",
+                    status_code=502,
+                )
+            raise BlockchainException(
+                code="BLOCKCHAIN_CONTRACT_ERROR",
+                message=f"Blockchain call failed: {str(e)}",
+                status_code=502,
+            )
+
+    async def get_project_version(
+        self, registration_id: str
+    ) -> Optional[Dict[str, Any]]:
+        svc = self._get_service()
+        if not svc.contract_address:
             return None
+
+        from app.core.exceptions import BlockchainException
+        try:
+            return svc.get_project_version(registration_id)
+        except BlockchainException as be:
+            if be.code == "VERSION_NOT_FOUND":
+                return None
+            raise
+        except Exception as e:
+            err_str = str(e).lower()
+            if "versionnotfound" in err_str:
+                return None
+            if "timeout" in err_str or "timed out" in err_str:
+                raise BlockchainException(
+                    code="BLOCKCHAIN_TIMEOUT",
+                    message=f"Blockchain call timed out: {str(e)}",
+                    status_code=504,
+                )
+            if "connection" in err_str or "refused" in err_str:
+                raise BlockchainException(
+                    code="BLOCKCHAIN_CONNECTION_ERROR",
+                    message=f"RPC connection failed: {str(e)}",
+                    status_code=502,
+                )
+            raise BlockchainException(
+                code="BLOCKCHAIN_CONTRACT_ERROR",
+                message=f"Blockchain call failed: {str(e)}",
+                status_code=502,
+            )
 
 
 # Global provider instance management (enables mock injection in test suites)
