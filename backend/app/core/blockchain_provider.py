@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel, ConfigDict
 
 
@@ -44,7 +44,7 @@ class BlockchainVerificationProvider(ABC):
 
 class DefaultBlockchainVerificationProvider(BlockchainVerificationProvider):
     """
-    Default provider for Phase 4 foundation.
+    Default provider for foundation when smart contract is unconfigured.
     Does not call external RPCs or fabricate on-chain transactions.
     Relies on authoritative database state or returns unanchored status.
     """
@@ -52,9 +52,51 @@ class DefaultBlockchainVerificationProvider(BlockchainVerificationProvider):
     async def verify_project_version(
         self, registration_id: str, expected_hash: Optional[str] = None
     ) -> Optional[OnChainVerificationResult]:
-        # In Phase 4, the service layer queries PostgreSQL for the persisted BlockchainRecord.
-        # Developer 3 will inject Web3.py RPC calls into a Web3BlockchainVerificationProvider in Phase 5.
         return None
+
+
+class Web3BlockchainVerificationProvider(BlockchainVerificationProvider):
+    """
+    Concrete Web3.py verification provider for ProjectRegistry.sol.
+    Queries the deployed smart contract directly via BlockchainService.
+    """
+
+    def __init__(self, service: Optional[Any] = None) -> None:
+        self._service = service
+
+    def _get_service(self) -> Any:
+        if self._service is not None:
+            return self._service
+        from app.services.blockchain_service import get_blockchain_service
+        return get_blockchain_service()
+
+    async def verify_project_version(
+        self, registration_id: str, expected_hash: Optional[str] = None
+    ) -> Optional[OnChainVerificationResult]:
+        svc = self._get_service()
+        if not svc.contract_address:
+            return None
+
+        # Verify on-chain using expected_hash or zero hash if none provided
+        hash_to_check = expected_hash or ("0" * 64)
+        try:
+            res = svc.verify_project_version(registration_id, hash_to_check)
+            if not res.get("anchored_timestamp") and not res.get("is_valid"):
+                # No on-chain record found
+                return None
+
+            return OnChainVerificationResult(
+                is_valid=res["is_valid"],
+                registration_id=registration_id,
+                anchored_timestamp=res["anchored_timestamp"],
+                ipfs_root_cid=res["ipfs_root_cid"],
+                author_wallet=res["author_wallet"],
+                dispute_status=res["dispute_status"],
+                smart_contract_address=res["smart_contract_address"],
+                match_confirmed=res["match_confirmed"],
+            )
+        except Exception:
+            return None
 
 
 # Global provider instance management (enables mock injection in test suites)
@@ -65,7 +107,12 @@ def get_blockchain_provider() -> BlockchainVerificationProvider:
     """Returns active BlockchainVerificationProvider instance."""
     global _global_blockchain_provider
     if _global_blockchain_provider is None:
-        _global_blockchain_provider = DefaultBlockchainVerificationProvider()
+        from app.core.config import settings
+
+        if getattr(settings, "PROJECT_REGISTRY_CONTRACT_ADDRESS", ""):
+            _global_blockchain_provider = Web3BlockchainVerificationProvider()
+        else:
+            _global_blockchain_provider = DefaultBlockchainVerificationProvider()
     return _global_blockchain_provider
 
 

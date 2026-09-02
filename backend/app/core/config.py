@@ -53,8 +53,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # Blockchain Provider URI
-    WEB3_PROVIDER_URI: str = "http://127.0.0.1:8545"
+    # Blockchain & Web3.py Settings
+    BLOCKCHAIN_RPC_URL: str = "http://127.0.0.1:8545"
+    WEB3_PROVIDER_URI: str = "http://127.0.0.1:8545"  # Backward compatibility alias
+    PROJECT_REGISTRY_CONTRACT_ADDRESS: str = ""
+    BLOCKCHAIN_CHAIN_ID: int = 31337
+    RELAYER_PRIVATE_KEY: str = ""
+    BLOCKCHAIN_CONFIRMATION_BLOCKS: int = 1
+    BLOCKCHAIN_TIMEOUT_SECONDS: int = 30
 
     # Local Artifact Storage Settings
     ARTIFACT_STORAGE_DIR: str = "storage/artifacts"
