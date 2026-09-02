@@ -62,6 +62,10 @@ from app.schemas.verification import (
     VerificationVersionSummary,
     VerifyHashRequest,
 )
+from app.schemas.certificate import (
+    CertificateMetadataData,
+    CertificateMetadataResponse,
+)
 from app.schemas.dispute import (
     DisputeAdjudicateRequest,
     DisputeClaimantSummary,
@@ -126,4 +130,7 @@ __all__ = [
     "DisputeClaimantSummary",
     "DisputeDetailResponse",
     "DisputeListResponse",
+    # Certificates
+    "CertificateMetadataData",
+    "CertificateMetadataResponse",
 ]
