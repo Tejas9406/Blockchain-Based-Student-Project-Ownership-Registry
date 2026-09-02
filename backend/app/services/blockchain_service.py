@@ -462,6 +462,28 @@ class BlockchainService:
                 contract.functions.verifyProjectVersion(registration_id, hash_bytes32).call()
             )
         except Exception as e:
+            if isinstance(e, BlockchainException):
+                raise
+            err_str = str(e).lower()
+            if "timeout" in err_str or "timed out" in err_str:
+                raise BlockchainException(
+                    code="BLOCKCHAIN_TIMEOUT",
+                    message=f"Blockchain call verifyProjectVersion timed out: {str(e)}",
+                    status_code=504,
+                    details={"registration_id": registration_id, "error": str(e)},
+                )
+            if (
+                "connection" in err_str
+                or "connect" in err_str
+                or "refused" in err_str
+                or "network" in err_str
+            ):
+                raise BlockchainException(
+                    code="BLOCKCHAIN_CONNECTION_ERROR",
+                    message=f"RPC connection failed for verifyProjectVersion: {str(e)}",
+                    status_code=502,
+                    details={"registration_id": registration_id, "error": str(e)},
+                )
             raise BlockchainException(
                 code="BLOCKCHAIN_CONTRACT_ERROR",
                 message=f"Contract call verifyProjectVersion failed: {str(e)}",
@@ -510,11 +532,33 @@ class BlockchainService:
                 message=f"Contract error retrieving version proof: {str(cle)}",
             )
         except Exception as e:
-            if "VersionNotFound" in str(e):
+            if isinstance(e, BlockchainException):
+                raise
+            err_str = str(e).lower()
+            if "versionnotfound" in err_str:
                 raise BlockchainException(
                     code="VERSION_NOT_FOUND",
                     message=f"No on-chain proof found for registration ID '{registration_id}'.",
                     status_code=404,
+                )
+            if "timeout" in err_str or "timed out" in err_str:
+                raise BlockchainException(
+                    code="BLOCKCHAIN_TIMEOUT",
+                    message=f"Blockchain call getProjectVersion timed out: {str(e)}",
+                    status_code=504,
+                    details={"registration_id": registration_id, "error": str(e)},
+                )
+            if (
+                "connection" in err_str
+                or "connect" in err_str
+                or "refused" in err_str
+                or "network" in err_str
+            ):
+                raise BlockchainException(
+                    code="BLOCKCHAIN_CONNECTION_ERROR",
+                    message=f"RPC connection failed for getProjectVersion: {str(e)}",
+                    status_code=502,
+                    details={"registration_id": registration_id, "error": str(e)},
                 )
             raise BlockchainException(
                 code="BLOCKCHAIN_CONTRACT_ERROR",
