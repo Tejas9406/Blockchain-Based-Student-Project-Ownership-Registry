@@ -308,7 +308,7 @@ def test_router_placeholders(client: TestClient):
     assert res_cert.status_code == 501
 
     res_disp = client.post("/api/v1/disputes")
-    assert res_disp.status_code == 501
+    assert res_disp.status_code == 401  # Implemented in Step 8, requires JWT auth
 
     res_adm = client.get("/api/v1/admin/audit-logs")
     assert res_adm.status_code == 501

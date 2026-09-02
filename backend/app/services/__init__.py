@@ -36,6 +36,12 @@ from .blockchain_service import (
     lifecycle_stage_to_solidity,
     normalize_address,
 )
+from .dispute_service import (
+    adjudicate_dispute,
+    get_dispute,
+    list_project_disputes,
+    raise_dispute,
+)
 
 __all__ = [
     "authenticate_user",
@@ -62,4 +68,8 @@ __all__ = [
     "sha256_to_bytes32",
     "lifecycle_stage_to_solidity",
     "normalize_address",
+    "raise_dispute",
+    "adjudicate_dispute",
+    "get_dispute",
+    "list_project_disputes",
 ]

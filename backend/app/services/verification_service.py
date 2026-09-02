@@ -254,11 +254,16 @@ async def verify_by_registration_id(
 
     # Case: Unanchored (PENDING / DRAFT / ANCHORING) with no blockchain proof
     if not onchain_proof_data and not onchain_res and not record:
-        is_valid = (dispute_val == "NONE" or dispute_val == DisputeStatus.NONE.value)
-        msg = f"Project version registration confirmed in database ({anchoring_val}); awaiting blockchain anchoring."
-        if dispute_val != "NONE" and dispute_val != DisputeStatus.NONE.value:
-            msg = f"Project version is currently under dispute ({dispute_val})."
-            is_valid = False
+        effective_disp = dispute_val.upper()
+        is_disp = effective_disp in ("OPEN", "UNDER_REVIEW", "RESOLVED")
+        is_valid = not is_disp
+        if is_disp:
+            if effective_disp == "RESOLVED":
+                msg = "Dispute was upheld against this project version (RESOLVED)."
+            else:
+                msg = f"Project version is currently under dispute ({effective_disp})."
+        else:
+            msg = f"Project version registration confirmed in database ({anchoring_val}); awaiting blockchain anchoring."
 
         return VerificationResponseData(
             is_valid=is_valid,
@@ -303,9 +308,10 @@ async def verify_by_registration_id(
 
 
         # IPFS Root CID Comparison
-        if version.ipfs_root_cid and onchain_proof_data.get("ipfs_root_cid") != version.ipfs_root_cid:
+        onchain_cid = onchain_proof_data.get("ipfs_root_cid") or onchain_proof_data.get("ipfs_cid")
+        if version.ipfs_root_cid and onchain_cid != version.ipfs_root_cid:
             mismatch_reasons.append(
-                f"IPFS root CID mismatch: on-chain '{onchain_proof_data.get('ipfs_root_cid')}' != expected '{version.ipfs_root_cid}'."
+                f"IPFS root CID mismatch: on-chain '{onchain_cid}' != expected '{version.ipfs_root_cid}'."
             )
 
         # Version Index Comparison
@@ -421,13 +427,8 @@ async def verify_by_registration_id(
         if onchain_proof_data
         else (onchain_res.dispute_status if onchain_res else dispute_val)
     )
-    is_disputed = (
-        dispute_val != "NONE"
-        and dispute_val != DisputeStatus.NONE.value
-    ) or (
-        onchain_dispute is not None
-        and onchain_dispute != "NONE"
-    )
+    effective_dispute = (onchain_dispute or dispute_val or "NONE").upper()
+    is_disputed = effective_dispute in ("OPEN", "UNDER_REVIEW", "RESOLVED")
 
     is_valid = not has_mismatch and not is_disputed
 
@@ -463,7 +464,7 @@ async def verify_by_registration_id(
         block_timestamp=block_time,
         smart_contract_address=contract_addr or "0x0",
         author_wallet=auth_wallet or "0x0",
-        dispute_status=onchain_dispute or dispute_val,
+        dispute_status=effective_dispute,
         match_confirmed=not has_mismatch,
     )
 
@@ -471,7 +472,10 @@ async def verify_by_registration_id(
     if has_mismatch:
         msg = f"Cryptographic verification mismatch: {'; '.join(mismatch_reasons)}"
     elif is_disputed:
-        msg = f"Project version is currently under dispute ({onchain_dispute or dispute_val})."
+        if effective_dispute == "RESOLVED":
+            msg = "Dispute was upheld against this project version (RESOLVED)."
+        else:
+            msg = f"Project version is currently under dispute ({effective_dispute})."
 
     return VerificationResponseData(
         is_valid=is_valid,
