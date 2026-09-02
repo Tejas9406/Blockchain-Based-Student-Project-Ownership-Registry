@@ -42,6 +42,11 @@ from .dispute_service import (
     list_project_disputes,
     raise_dispute,
 )
+from app.services.certificate_service import (
+    OwnershipCertificatePDFGenerator,
+    generate_certificate_pdf,
+    get_certificate_metadata,
+)
 
 __all__ = [
     "authenticate_user",
@@ -72,4 +77,7 @@ __all__ = [
     "adjudicate_dispute",
     "get_dispute",
     "list_project_disputes",
+    "get_certificate_metadata",
+    "generate_certificate_pdf",
+    "OwnershipCertificatePDFGenerator",
 ]
