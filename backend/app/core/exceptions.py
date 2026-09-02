@@ -165,6 +165,19 @@ class IPFSException(AppException):
         super().__init__(message=message, code=code, status_code=status_code, details=details)
 
 
+class BlockchainException(AppException):
+    """Raised when blockchain communication, contract execution, or relayer operations fail (HTTP 502)."""
+
+    def __init__(
+        self,
+        message: str = "Blockchain service operation failed.",
+        code: str = "BLOCKCHAIN_ERROR",
+        status_code: int = 502,
+        details: Optional[Any] = None,
+    ):
+        super().__init__(message=message, code=code, status_code=status_code, details=details)
+
+
 __all__ = [
     "AppException",
     "NotFoundError",
@@ -180,4 +193,5 @@ __all__ = [
     "NotImplementedAppError",
     "InternalServerError",
     "IPFSException",
+    "BlockchainException",
 ]

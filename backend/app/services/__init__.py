@@ -28,6 +28,14 @@ from .verification_service import (
     verify_by_hash,
     verify_by_registration_id,
 )
+from .blockchain_service import (
+    BlockchainService,
+    get_blockchain_service,
+    set_blockchain_service,
+    sha256_to_bytes32,
+    lifecycle_stage_to_solidity,
+    normalize_address,
+)
 
 __all__ = [
     "authenticate_user",
@@ -48,4 +56,10 @@ __all__ = [
     "verify_by_registration_id",
     "verify_by_hash",
     "verify_by_file",
+    "BlockchainService",
+    "get_blockchain_service",
+    "set_blockchain_service",
+    "sha256_to_bytes32",
+    "lifecycle_stage_to_solidity",
+    "normalize_address",
 ]
