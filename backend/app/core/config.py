@@ -56,5 +56,8 @@ class Settings(BaseSettings):
     # Blockchain Provider URI
     WEB3_PROVIDER_URI: str = "http://127.0.0.1:8545"
 
+    # Local Artifact Storage Settings
+    ARTIFACT_STORAGE_DIR: str = "storage/artifacts"
+
 
 settings = Settings()

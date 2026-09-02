@@ -297,10 +297,9 @@ def test_openapi_and_docs_endpoints(client: TestClient):
 
 
 def test_router_placeholders(client: TestClient):
-    """Test 13: Domain router placeholders return 501 Not Implemented."""
+    """Test 13: Domain router placeholders return 501 Not Implemented (implemented modules return auth or success)."""
     res_art = client.post("/api/v1/artifacts/upload")
-
-    assert res_art.status_code == 501
+    assert res_art.status_code == 401  # Implemented in Step 4.4, requires JWT auth
 
     res_ver = client.get("/api/v1/verification/verify-registration/REG-2026-001")
     assert res_ver.status_code == 501
