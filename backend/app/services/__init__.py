@@ -23,6 +23,11 @@ from .user_service import (
     refresh_access_token,
     register_user,
 )
+from .verification_service import (
+    verify_by_file,
+    verify_by_hash,
+    verify_by_registration_id,
+)
 
 __all__ = [
     "authenticate_user",
@@ -40,4 +45,7 @@ __all__ = [
     "sanitize_filename",
     "MAX_ARTIFACT_SIZE_BYTES",
     "STREAM_CHUNK_SIZE",
+    "verify_by_registration_id",
+    "verify_by_hash",
+    "verify_by_file",
 ]

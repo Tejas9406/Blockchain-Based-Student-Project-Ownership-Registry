@@ -301,8 +301,8 @@ def test_router_placeholders(client: TestClient):
     res_art = client.post("/api/v1/artifacts/upload")
     assert res_art.status_code == 401  # Implemented in Step 4.4, requires JWT auth
 
-    res_ver = client.get("/api/v1/verification/verify-registration/REG-2026-001")
-    assert res_ver.status_code == 501
+    res_ver = client.get("/api/v1/verification/verify-registration/REG-2026-00001")
+    assert res_ver.status_code == 404  # Implemented in Step 4.5: public verification endpoint (404 when not found)
 
     res_cert = client.get("/api/v1/certificates/REG-2026-001")
     assert res_cert.status_code == 501
