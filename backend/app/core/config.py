@@ -59,5 +59,11 @@ class Settings(BaseSettings):
     # Local Artifact Storage Settings
     ARTIFACT_STORAGE_DIR: str = "storage/artifacts"
 
+    # Decentralized IPFS Storage Settings (Kubo HTTP RPC API)
+    IPFS_API_URL: str = "http://127.0.0.1:5001"
+    IPFS_GATEWAY_URL: str = "http://127.0.0.1:8080"
+    IPFS_TIMEOUT_SECONDS: int = 30
+    STORAGE_BACKEND: str = "local"  # "local" or "ipfs"
+
 
 settings = Settings()

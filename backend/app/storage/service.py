@@ -50,11 +50,19 @@ _global_storage_service: Optional[StorageService] = None
 def get_storage_service() -> StorageService:
     """
     Returns the active StorageService instance.
-    Defaults to LocalStorageAdapter if not overridden.
+    Selects adapter based on settings.STORAGE_BACKEND ("local" or "ipfs").
     """
     global _global_storage_service
     if _global_storage_service is None:
-        _global_storage_service = StorageService()
+        from app.core.config import settings
+
+        if getattr(settings, "STORAGE_BACKEND", "local").lower() == "ipfs":
+            from app.storage.ipfs_adapter import IPFSStorageAdapter
+
+            adapter = IPFSStorageAdapter()
+        else:
+            adapter = LocalStorageAdapter()
+        _global_storage_service = StorageService(adapter=adapter)
     return _global_storage_service
 
 

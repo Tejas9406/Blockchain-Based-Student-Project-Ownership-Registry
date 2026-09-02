@@ -152,6 +152,19 @@ class InternalServerError(AppException):
         super().__init__(message=message, code=code, status_code=500, details=details)
 
 
+class IPFSException(AppException):
+    """Raised when IPFS communication fails, times out, or returns a daemon error (HTTP 502)."""
+
+    def __init__(
+        self,
+        message: str = "IPFS service operation failed.",
+        code: str = "IPFS_ERROR",
+        status_code: int = 502,
+        details: Optional[Any] = None,
+    ):
+        super().__init__(message=message, code=code, status_code=status_code, details=details)
+
+
 __all__ = [
     "AppException",
     "NotFoundError",
@@ -166,4 +179,5 @@ __all__ = [
     "ValidationException",
     "NotImplementedAppError",
     "InternalServerError",
+    "IPFSException",
 ]
