@@ -433,3 +433,22 @@ class IPFSStorageAdapter(StorageAdapter):
         if is_valid_ipfs_cid(cid):
             return await self.is_pinned(cid)
         return False
+
+
+# Global singleton instance management
+_global_ipfs_adapter: Optional[IPFSStorageAdapter] = None
+
+
+def get_ipfs_adapter() -> IPFSStorageAdapter:
+    """Returns the active global IPFSStorageAdapter singleton."""
+    global _global_ipfs_adapter
+    if _global_ipfs_adapter is None:
+        _global_ipfs_adapter = IPFSStorageAdapter()
+    return _global_ipfs_adapter
+
+
+def set_ipfs_adapter(adapter: Optional[IPFSStorageAdapter]) -> None:
+    """Overrides the active global IPFSStorageAdapter (primarily for testing)."""
+    global _global_ipfs_adapter
+    _global_ipfs_adapter = adapter
+

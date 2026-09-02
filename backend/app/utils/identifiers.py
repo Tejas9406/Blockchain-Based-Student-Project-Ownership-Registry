@@ -55,3 +55,15 @@ def generate_artifact_public_id() -> str:
     year_month = now.strftime("%Y%m")
     random_hex = secrets.token_hex(3)[:5].upper()
     return f"ART-{year_month}-{random_hex}"
+
+
+def generate_blockchain_public_id() -> str:
+    """
+    Generates a public blockchain record identifier conforming to DATABASE_DESIGN.md Section 7.
+    Format: BLK-YYYYMM-XXXXX (e.g. BLK-202609-77A23)
+    """
+    now = datetime.now(timezone.utc)
+    year_month = now.strftime("%Y%m")
+    random_hex = secrets.token_hex(3)[:5].upper()
+    return f"BLK-{year_month}-{random_hex}"
+

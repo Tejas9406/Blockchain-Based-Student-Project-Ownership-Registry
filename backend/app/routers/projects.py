@@ -306,7 +306,7 @@ def add_member_to_project(
         },
     },
 )
-def create_version_for_project(
+async def create_version_for_project(
     request: Request,
     response: Response,
     project_id: str,
@@ -318,7 +318,7 @@ def create_version_for_project(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> ApiResponse[ProjectVersionDetail]:
-    version, is_created = create_project_version(
+    version, is_created = await create_project_version(
         db=db,
         project_identifier=project_id,
         creator=current_user,
@@ -327,6 +327,7 @@ def create_version_for_project(
     )
     if is_created:
         response.status_code = status.HTTP_201_CREATED
+
     else:
         response.status_code = status.HTTP_200_OK
 
