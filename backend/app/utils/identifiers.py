@@ -44,3 +44,14 @@ def generate_registration_id() -> str:
     year = now.strftime("%Y")
     random_hex = secrets.token_hex(3)[:5].upper()
     return f"REG-{year}-{random_hex}"
+
+
+def generate_artifact_public_id() -> str:
+    """
+    Generates a public artifact identifier conforming to DATABASE_DESIGN.md Section 7.
+    Format: ART-YYYYMM-XXXXX (e.g. ART-202609-11E54)
+    """
+    now = datetime.now(timezone.utc)
+    year_month = now.strftime("%Y%m")
+    random_hex = secrets.token_hex(3)[:5].upper()
+    return f"ART-{year_month}-{random_hex}"

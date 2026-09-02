@@ -51,6 +51,10 @@ from app.schemas.project_version import (
     ProjectVersionResponse,
     ProjectVersionSummary,
 )
+from app.schemas.artifact import (
+    ArtifactItem,
+    ArtifactResponse,
+)
 
 __all__ = [
     # Common Envelopes
@@ -93,6 +97,7 @@ __all__ = [
     "ProjectVersionDetail",
     "ProjectVersionResponse",
     "ProjectVersionSummary",
+    # Artifacts
+    "ArtifactItem",
+    "ArtifactResponse",
 ]
-
-

@@ -11,6 +11,13 @@ from .project_version_service import (
     create_project_version,
     list_project_versions,
 )
+from .artifact_service import (
+    MAX_ARTIFACT_SIZE_BYTES,
+    STREAM_CHUNK_SIZE,
+    get_artifact_content,
+    ingest_artifact,
+    sanitize_filename,
+)
 from .user_service import (
     authenticate_user,
     refresh_access_token,
@@ -28,4 +35,9 @@ __all__ = [
     "list_project_members",
     "create_project_version",
     "list_project_versions",
+    "ingest_artifact",
+    "get_artifact_content",
+    "sanitize_filename",
+    "MAX_ARTIFACT_SIZE_BYTES",
+    "STREAM_CHUNK_SIZE",
 ]

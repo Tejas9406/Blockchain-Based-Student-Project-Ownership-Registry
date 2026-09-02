@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -26,10 +26,10 @@ class Artifact(Base):
         index=True,
         nullable=False,
     )
-    version_id: Mapped[uuid.UUID] = mapped_column(
+    version_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("project_versions.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True,
     )
     file_name: Mapped[str] = mapped_column(
@@ -49,9 +49,10 @@ class Artifact(Base):
         index=True,
         nullable=False,
     )
-    ipfs_cid: Mapped[str] = mapped_column(
+    ipfs_cid: Mapped[Optional[str]] = mapped_column(
         String(255),
-        nullable=False,
+        nullable=True,
+        default=None,
     )
     artifact_category: Mapped[ArtifactCategory] = mapped_column(
         Enum(ArtifactCategory, name="artifact_category", native_enum=True),
@@ -66,7 +67,7 @@ class Artifact(Base):
     )
 
     # Relationships
-    version: Mapped["ProjectVersion"] = relationship(
+    version: Mapped[Optional["ProjectVersion"]] = relationship(
         "ProjectVersion",
         back_populates="artifacts",
     )
