@@ -1,5 +1,5 @@
 from typing import Annotated, List, Optional
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, Header, Query, Request, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_optional_current_user, require_role
@@ -11,6 +11,7 @@ from app.schemas.error import ApiErrorResponse
 from app.schemas.pagination import ApiPaginatedResponse, PaginatedMeta
 from app.schemas.project import ProjectCreateRequest, ProjectSummary
 from app.schemas.project_member import ProjectMemberCreateRequest, ProjectMemberItem
+from app.schemas.project_version import ProjectVersionCreateRequest, ProjectVersionDetail
 from app.services.project_member_service import (
     add_project_member,
     list_project_members,
@@ -19,6 +20,10 @@ from app.services.project_service import (
     create_project,
     get_project_by_identifier,
     list_projects,
+)
+from app.services.project_version_service import (
+    create_project_version,
+    list_project_versions,
 )
 
 router = APIRouter(prefix="/projects", tags=["Projects & Milestones"])
@@ -257,6 +262,119 @@ def add_member_to_project(
     return ApiResponse(
         success=True,
         data=member,
+        meta=ApiMeta(
+            timestamp=get_utc_now_iso(),
+            request_id=request_id,
+        ),
+    )
+
+
+@router.post(
+    "/{project_id}/versions",
+    response_model=ApiResponse[ProjectVersionDetail],
+    status_code=status.HTTP_201_CREATED,
+    summary="Create Project Version Milestone",
+    description="Creates an immutable milestone version snapshot for a student project. Requires project lead or owner permissions.",
+    responses={
+        status.HTTP_201_CREATED: {
+            "model": ApiResponse[ProjectVersionDetail],
+            "description": "Milestone version successfully created and queued for anchoring.",
+        },
+        status.HTTP_200_OK: {
+            "model": ApiResponse[ProjectVersionDetail],
+            "description": "Idempotent request; returning existing version snapshot.",
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": ApiErrorResponse,
+            "description": "Authentication credentials missing or invalid.",
+        },
+        status.HTTP_403_FORBIDDEN: {
+            "model": ApiErrorResponse,
+            "description": "Caller is not authorized to create versions for this project.",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "model": ApiErrorResponse,
+            "description": "Project or referenced artifact not found.",
+        },
+        status.HTTP_409_CONFLICT: {
+            "model": ApiErrorResponse,
+            "description": "Duplicate version or identifier collision.",
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "model": ApiErrorResponse,
+            "description": "Invalid payload or prohibited lifecycle transition.",
+        },
+    },
+)
+def create_version_for_project(
+    request: Request,
+    response: Response,
+    project_id: str,
+    payload: ProjectVersionCreateRequest,
+    idempotency_key: Annotated[
+        Optional[str],
+        Header(alias="Idempotency-Key", description="Optional unique client deduplication key"),
+    ] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ApiResponse[ProjectVersionDetail]:
+    version, is_created = create_project_version(
+        db=db,
+        project_identifier=project_id,
+        creator=current_user,
+        request=payload,
+        idempotency_key=idempotency_key,
+    )
+    if is_created:
+        response.status_code = status.HTTP_201_CREATED
+    else:
+        response.status_code = status.HTTP_200_OK
+
+    request_id = getattr(request.state, "request_id", None)
+
+    return ApiResponse(
+        success=True,
+        data=version,
+        meta=ApiMeta(
+            timestamp=get_utc_now_iso(),
+            request_id=request_id,
+        ),
+    )
+
+
+@router.get(
+    "/{project_id}/versions",
+    response_model=ApiResponse[List[ProjectVersionDetail]],
+    status_code=status.HTTP_200_OK,
+    summary="List Project Versions",
+    description="Retrieves all immutable milestone snapshots for a project in sequential ascending order.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": ApiResponse[List[ProjectVersionDetail]],
+            "description": "Project versions retrieved successfully.",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "model": ApiErrorResponse,
+            "description": "The requested project identifier does not exist.",
+        },
+    },
+)
+def list_versions_for_project(
+    request: Request,
+    project_id: str,
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db),
+) -> ApiResponse[List[ProjectVersionDetail]]:
+    versions = list_project_versions(
+        db=db,
+        project_identifier=project_id,
+        current_user=current_user,
+    )
+    request_id = getattr(request.state, "request_id", None)
+
+    return ApiResponse(
+        success=True,
+        data=versions,
         meta=ApiMeta(
             timestamp=get_utc_now_iso(),
             request_id=request_id,

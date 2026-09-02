@@ -43,6 +43,14 @@ from app.schemas.project_member import (
     ProjectMemberItem,
     ProjectMemberResponse,
 )
+from app.schemas.project_version import (
+    ArtifactItemSummary,
+    BlockchainProofSummary,
+    ProjectVersionCreateRequest,
+    ProjectVersionDetail,
+    ProjectVersionResponse,
+    ProjectVersionSummary,
+)
 
 __all__ = [
     # Common Envelopes
@@ -78,6 +86,13 @@ __all__ = [
     "ProjectMemberCreateRequest",
     "ProjectMemberItem",
     "ProjectMemberResponse",
+    # Project Versions
+    "ArtifactItemSummary",
+    "BlockchainProofSummary",
+    "ProjectVersionCreateRequest",
+    "ProjectVersionDetail",
+    "ProjectVersionResponse",
+    "ProjectVersionSummary",
 ]
 
 
