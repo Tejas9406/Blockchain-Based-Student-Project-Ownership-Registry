@@ -55,6 +55,13 @@ from app.schemas.artifact import (
     ArtifactItem,
     ArtifactResponse,
 )
+from app.schemas.verification import (
+    VerificationBlockchainProof,
+    VerificationProjectSummary,
+    VerificationResponseData,
+    VerificationVersionSummary,
+    VerifyHashRequest,
+)
 
 __all__ = [
     # Common Envelopes
@@ -100,4 +107,10 @@ __all__ = [
     # Artifacts
     "ArtifactItem",
     "ArtifactResponse",
+    # Verification
+    "VerifyHashRequest",
+    "VerificationProjectSummary",
+    "VerificationVersionSummary",
+    "VerificationBlockchainProof",
+    "VerificationResponseData",
 ]
