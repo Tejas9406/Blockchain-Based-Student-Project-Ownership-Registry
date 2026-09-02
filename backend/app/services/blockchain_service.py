@@ -656,14 +656,62 @@ class BlockchainService:
             receipt = self._w3.eth.wait_for_transaction_receipt(tx_hash, timeout=self._timeout)
 
         except ContractLogicError as cle:
+            err_str = str(cle).lower()
+            if "activedisputeexists" in err_str:
+                raise BlockchainException(
+                    code="ACTIVE_DISPUTE_EXISTS",
+                    message=f"An active dispute already exists for registration '{registration_id}'.",
+                    status_code=409,
+                    details={"registration_id": registration_id, "error": str(cle)},
+                )
+            if "versionnotfound" in err_str:
+                raise BlockchainException(
+                    code="VERSION_NOT_FOUND",
+                    message=f"Registration ID '{registration_id}' not found on-chain.",
+                    status_code=404,
+                    details={"registration_id": registration_id, "error": str(cle)},
+                )
             raise BlockchainException(
                 code="BLOCKCHAIN_TRANSACTION_FAILED",
                 message=f"raiseDispute transaction reverted: {str(cle)}",
+                status_code=502,
+                details={"registration_id": registration_id, "error": str(cle)},
             )
         except Exception as e:
+            if isinstance(e, BlockchainException):
+                raise
+            err_str = str(e).lower()
+            if "activedisputeexists" in err_str:
+                raise BlockchainException(
+                    code="ACTIVE_DISPUTE_EXISTS",
+                    message=f"An active dispute already exists for registration '{registration_id}'.",
+                    status_code=409,
+                    details={"registration_id": registration_id, "error": str(e)},
+                )
+            if "timeout" in err_str or "timed out" in err_str:
+                raise BlockchainException(
+                    code="BLOCKCHAIN_TIMEOUT",
+                    message=f"raiseDispute transaction timed out: {str(e)}",
+                    status_code=504,
+                    details={"registration_id": registration_id, "error": str(e)},
+                )
+            if (
+                "connection" in err_str
+                or "connect" in err_str
+                or "refused" in err_str
+                or "network" in err_str
+            ):
+                raise BlockchainException(
+                    code="BLOCKCHAIN_CONNECTION_ERROR",
+                    message=f"RPC connection failed for raiseDispute: {str(e)}",
+                    status_code=502,
+                    details={"registration_id": registration_id, "error": str(e)},
+                )
             raise BlockchainException(
                 code="BLOCKCHAIN_TRANSACTION_FAILED",
                 message=f"raiseDispute failed: {str(e)}",
+                status_code=502,
+                details={"registration_id": registration_id, "error": str(e)},
             )
 
         status = receipt.get("status") if isinstance(receipt, dict) else getattr(receipt, "status", None)
@@ -729,14 +777,48 @@ class BlockchainService:
             receipt = self._w3.eth.wait_for_transaction_receipt(tx_hash, timeout=self._timeout)
 
         except ContractLogicError as cle:
+            err_str = str(cle).lower()
+            if "versionnotfound" in err_str:
+                raise BlockchainException(
+                    code="VERSION_NOT_FOUND",
+                    message=f"Registration ID '{registration_id}' not found on-chain.",
+                    status_code=404,
+                    details={"registration_id": registration_id, "error": str(cle)},
+                )
             raise BlockchainException(
                 code="BLOCKCHAIN_TRANSACTION_FAILED",
                 message=f"resolveDispute transaction reverted: {str(cle)}",
+                status_code=502,
+                details={"registration_id": registration_id, "error": str(cle)},
             )
         except Exception as e:
+            if isinstance(e, BlockchainException):
+                raise
+            err_str = str(e).lower()
+            if "timeout" in err_str or "timed out" in err_str:
+                raise BlockchainException(
+                    code="BLOCKCHAIN_TIMEOUT",
+                    message=f"resolveDispute transaction timed out: {str(e)}",
+                    status_code=504,
+                    details={"registration_id": registration_id, "error": str(e)},
+                )
+            if (
+                "connection" in err_str
+                or "connect" in err_str
+                or "refused" in err_str
+                or "network" in err_str
+            ):
+                raise BlockchainException(
+                    code="BLOCKCHAIN_CONNECTION_ERROR",
+                    message=f"RPC connection failed for resolveDispute: {str(e)}",
+                    status_code=502,
+                    details={"registration_id": registration_id, "error": str(e)},
+                )
             raise BlockchainException(
                 code="BLOCKCHAIN_TRANSACTION_FAILED",
                 message=f"resolveDispute failed: {str(e)}",
+                status_code=502,
+                details={"registration_id": registration_id, "error": str(e)},
             )
 
         res_status = receipt.get("status") if isinstance(receipt, dict) else getattr(receipt, "status", None)

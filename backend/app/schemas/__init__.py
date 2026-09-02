@@ -62,6 +62,13 @@ from app.schemas.verification import (
     VerificationVersionSummary,
     VerifyHashRequest,
 )
+from app.schemas.dispute import (
+    DisputeAdjudicateRequest,
+    DisputeClaimantSummary,
+    DisputeCreateRequest,
+    DisputeDetailResponse,
+    DisputeListResponse,
+)
 
 __all__ = [
     # Common Envelopes
@@ -113,4 +120,10 @@ __all__ = [
     "VerificationVersionSummary",
     "VerificationBlockchainProof",
     "VerificationResponseData",
+    # Disputes
+    "DisputeCreateRequest",
+    "DisputeAdjudicateRequest",
+    "DisputeClaimantSummary",
+    "DisputeDetailResponse",
+    "DisputeListResponse",
 ]
