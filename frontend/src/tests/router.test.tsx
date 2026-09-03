@@ -8,6 +8,7 @@ import * as tokenUtils from '../utils/token';
 
 import { projectService } from '../services/project.service';
 import { verificationService } from '../services/verification.service';
+import { disputeService } from '../services/dispute.service';
 
 describe('React Router & Auth Route Guards', () => {
   beforeEach(() => {
@@ -230,6 +231,29 @@ describe('React Router & Auth Route Guards', () => {
       );
 
       expect(await screen.findByRole('heading', { name: /Ownership Claims & Dispute Registry/i })).toBeInTheDocument();
+    });
+
+    it('renders DisputeDetailPage on "/disputes/:disputeId" when authenticated', async () => {
+      setupAuthenticatedUser();
+      vi.spyOn(disputeService, 'getDispute').mockResolvedValue({
+        public_id: 'DSP-202609-A8F92',
+        project_public_id: 'PRJ-123',
+        project_title: 'Test Project 123 Workspace',
+        dispute_type: 'PLAGIARISM',
+        claim_description: 'Plagiarism claim description details...',
+        status: 'OPEN',
+        created_at: '2026-08-31T18:50:00.000Z',
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/disputes/DSP-202609-A8F92']}>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </MemoryRouter>
+      );
+
+      expect(await screen.findByRole('heading', { name: /Ownership & Plagiarism Dispute Dossier/i })).toBeInTheDocument();
     });
 
     it('renders CertificateDetailPage on "/certificates/:registrationId" when authenticated', async () => {

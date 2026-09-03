@@ -4,23 +4,35 @@ import { DisputeStatus } from './project';
 
 export type DisputeType = 'PLAGIARISM' | 'UNAUTHORIZED_USE' | 'CITATION_FAILURE' | 'OTHER';
 
+export interface DisputeClaimantSummary {
+  public_id: string;
+  full_name: string;
+  institution_id?: string | null;
+}
+
 export interface DisputeDetailResponse {
-  public_id: string;          // "DSP-202608-XXXXX"
-  project_id: string;
-  claimant_user_id: string;
-  dispute_type: DisputeType;
+  public_id: string;
+  project_public_id: string;
+  project_title: string;
+  registration_id?: string | null;
+  dispute_type: DisputeType | string;
   claim_description: string;
   evidence_url?: string | null;
-  status: DisputeStatus;
+  status: DisputeStatus | string;
   resolution_notes?: string | null;
-  resolved_by_admin_id?: string | null;
+  transaction_hash?: string | null;
+  resolution_transaction_hash?: string | null;
+  claimant?: DisputeClaimantSummary | null;
   created_at: string;
   resolved_at?: string | null;
 }
 
+export type Dispute = DisputeDetailResponse;
+
 export interface DisputeCreateRequest {
-  project_id: string;
-  dispute_type: DisputeType;
+  project_id?: string;
+  registration_id?: string;
+  dispute_type: DisputeType | string;
   claim_description: string;
   evidence_url?: string;
 }
