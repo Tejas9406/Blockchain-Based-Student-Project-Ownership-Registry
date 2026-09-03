@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from '../app/router';
 import { AuthProvider } from '../context/AuthContext';
 import { authService } from '../services/auth.service';
+import { verificationService } from '../services/verification.service';
 import * as tokenUtils from '../utils/token';
 
 describe('Protected Routes & Navigation Flow', () => {
@@ -46,11 +47,13 @@ describe('Protected Routes & Navigation Flow', () => {
     );
 
     expect(
-      screen.getByRole('heading', { name: /Trustless Verification Portal/i })
+      screen.getByRole('heading', { name: /Trustless Ownership Verification/i })
     ).toBeInTheDocument();
   });
 
   it('allows unauthenticated access to public verification detail "/verify/:registrationId"', async () => {
+    vi.spyOn(verificationService, 'verifyByRegistrationId').mockReturnValue(new Promise(() => {}));
+
     render(
       <MemoryRouter initialEntries={['/verify/REG-2026-TEST']}>
         <AuthProvider>
@@ -60,7 +63,7 @@ describe('Protected Routes & Navigation Flow', () => {
     );
 
     expect(
-      screen.getByRole('heading', { name: /Ownership Authenticity Dossier/i })
+      screen.getByRole('heading', { name: /Verifying Ownership Proof/i })
     ).toBeInTheDocument();
   });
 
