@@ -34,12 +34,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
           <p className="max-w-xl mx-auto text-sm text-slate-400 leading-relaxed">{description}</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 max-w-lg mx-auto text-left font-mono text-xs text-slate-400 space-y-1">
-          <div className="text-emerald-400 font-semibold">// Architecture Status</div>
-          <div>API Service: Integrated & Type-Safe</div>
-          <div>Router Path: Active</div>
-          <div>Business UI: Ready for Feature Implementation</div>
-        </div>
+
 
         {actionText && actionLink && (
           <div className="pt-2">

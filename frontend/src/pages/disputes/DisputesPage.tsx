@@ -62,7 +62,10 @@ export const DisputesPage: React.FC = () => {
   }, [fetchDisputes]);
 
   const handleCreateSuccess = (newDispute: DisputeDetailResponse) => {
-    setDisputes((prev) => [newDispute, ...prev]);
+    setDisputes((prev) => [
+      newDispute,
+      ...prev.filter((d) => d.public_id !== newDispute.public_id),
+    ]);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {

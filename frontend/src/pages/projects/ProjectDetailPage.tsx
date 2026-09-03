@@ -178,7 +178,7 @@ export const ProjectDetailPage: React.FC = () => {
           </Link>
 
           <Link
-            to={`/disputes?projectId=${project.public_id}`}
+            to={`${ROUTES.DISPUTES.LIST}?projectId=${project.public_id}`}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-amber-400 border border-amber-500/20 transition-colors"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
