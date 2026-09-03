@@ -7,6 +7,7 @@ import { authService } from '../services/auth.service';
 import * as tokenUtils from '../utils/token';
 
 import { projectService } from '../services/project.service';
+import { verificationService } from '../services/verification.service';
 
 describe('React Router & Auth Route Guards', () => {
   beforeEach(() => {
@@ -48,10 +49,12 @@ describe('React Router & Auth Route Guards', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByRole('heading', { name: /Trustless Verification Portal/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Trustless Ownership Verification/i })).toBeInTheDocument();
     });
 
     it('renders VerificationDetailPage on "/verify/:registrationId"', () => {
+      vi.spyOn(verificationService, 'verifyByRegistrationId').mockReturnValue(new Promise(() => {}));
+
       render(
         <MemoryRouter initialEntries={['/verify/REG-2026-A8F92D']}>
           <AuthProvider>
@@ -60,7 +63,7 @@ describe('React Router & Auth Route Guards', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByRole('heading', { name: /Ownership Authenticity Dossier/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Verifying Ownership Proof/i })).toBeInTheDocument();
     });
 
     it('renders NotFoundPage on unknown routes', () => {

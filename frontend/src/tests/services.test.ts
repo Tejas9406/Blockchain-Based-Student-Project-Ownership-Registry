@@ -246,6 +246,28 @@ describe('API Service Layers', () => {
       expect(mockPost).toHaveBeenCalledWith('/verification/verify-hash', payload);
       expect(result.is_valid).toBe(true);
     });
+
+    it('calls POST /verification/verify-file with multipart form data', async () => {
+      const mockPost = vi.spyOn(apiClient, 'post').mockResolvedValue({
+        data: {
+          success: true,
+          data: { is_valid: true, registration_id: 'REG-2026-A8F92D' },
+          meta: { timestamp: '2026-08-31T18:50:00.000Z' },
+        },
+      } as any);
+
+      const mockFile = new File(['test file content'], 'test.pdf', { type: 'application/pdf' });
+      const result = await verificationService.verifyByFile(mockFile, 'REG-2026-A8F92D');
+
+      expect(mockPost).toHaveBeenCalledWith(
+        '/verification/verify-file',
+        expect.any(FormData),
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
+      expect(result.is_valid).toBe(true);
+    });
   });
 
   describe('disputeService', () => {

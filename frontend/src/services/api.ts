@@ -2,6 +2,8 @@ import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'ax
 import { getAccessToken } from '../utils/token';
 import { normalizeApiError } from '../utils/error';
 
+export { normalizeApiError };
+
 // API Base URL from Vite environment variable with local fallback
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
