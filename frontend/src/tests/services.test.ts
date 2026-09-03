@@ -109,6 +109,7 @@ describe('API Service Layers', () => {
         abstract: 'Project abstract',
         category: 'AI',
         department: 'CSE',
+        academic_year: '2025-2026',
       };
 
       const result = await projectService.createProject(payload);

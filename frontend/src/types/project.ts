@@ -12,7 +12,7 @@ export interface ProjectSummary {
   public_id: string;          // "PRJ-202608-99B12"
   slug: string;               // "decentralized-ipfs-academic-registry"
   title: string;
-  abstract: string;
+  abstract?: string | null;
   category: string;
   department: string;
   academic_year: string;
@@ -29,10 +29,10 @@ export interface ProjectSummary {
 
 export interface ProjectCreateRequest {
   title: string;
-  abstract: string;
+  abstract?: string | null;
   category: string;
   department: string;
-  academic_year?: string;
+  academic_year: string;
   visibility?: 'PUBLIC' | 'INSTITUTIONAL' | 'PRIVATE';
 }
 

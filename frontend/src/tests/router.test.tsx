@@ -6,6 +6,8 @@ import { AuthProvider } from '../context/AuthContext';
 import { authService } from '../services/auth.service';
 import * as tokenUtils from '../utils/token';
 
+import { projectService } from '../services/project.service';
+
 describe('React Router & Auth Route Guards', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -85,6 +87,34 @@ describe('React Router & Auth Route Guards', () => {
         institution_id: 'CS-2026-001',
         department: 'Computer Science',
       });
+      vi.spyOn(projectService, 'getProject').mockResolvedValue({
+        public_id: 'PRJ-123',
+        slug: 'prj-123-slug',
+        title: 'Project 123 Workspace',
+        abstract: 'Test project workspace',
+        category: 'Blockchain',
+        department: 'Computer Science',
+        academic_year: '2025-2026',
+        current_lifecycle_stage: 'DESIGN',
+        visibility: 'PUBLIC',
+        status: 'ACTIVE',
+        created_at: '2026-08-31T18:50:00.000Z',
+      });
+      vi.spyOn(projectService, 'listProjects').mockResolvedValue({
+        success: true,
+        data: [],
+        meta: {
+          page: 1,
+          page_size: 12,
+          total_items: 0,
+          total_pages: 0,
+          has_next: false,
+          has_prev: false,
+          timestamp: '2026-08-31T18:50:00.000Z',
+        },
+      });
+      vi.spyOn(projectService, 'listMembers').mockResolvedValue([]);
+      vi.spyOn(projectService, 'listVersions').mockResolvedValue([]);
     };
 
     it('redirects root "/" to DashboardPage when authenticated', async () => {
