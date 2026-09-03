@@ -434,11 +434,9 @@ async def get_certificate_metadata(
         )
 
     # 3. Blockchain & Verification Integrity Check
-    bc_service = blockchain_service or get_blockchain_service()
     verification_res = await verify_by_registration_id(
-        registration_id=normalized_id,
         db=db,
-        blockchain_service=bc_service,
+        registration_id=normalized_id,
     )
 
     # Cryptographic match verification

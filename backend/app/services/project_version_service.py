@@ -384,8 +384,18 @@ async def create_project_version(
                 files_payload[a.file_name] = content
 
         if files_payload:
+            from app.storage.ipfs_adapter import _global_ipfs_adapter
+            if ipfs_adapter is not None:
+                provider = ipfs_adapter
+            elif _global_ipfs_adapter is not None:
+                provider = _global_ipfs_adapter
+            elif getattr(settings, "STORAGE_BACKEND", "local").lower() == "ipfs":
+                provider = get_ipfs_adapter()
+            else:
+                provider = storage.adapter
+
             try:
-                cid_mapping = await ipfs.add_directory(files=files_payload, pin=True)
+                cid_mapping = await provider.add_directory(files=files_payload, pin=True)
                 root_cid = cid_mapping.get("root")
                 # Update individual artifact CIDs
                 for a in found_artifacts:
@@ -396,7 +406,7 @@ async def create_project_version(
             except Exception as e:
                 raise IPFSException(
                     code="IPFS_UPLOAD_FAILED",
-                    message=f"Failed to pin project artifacts to IPFS: {str(e)}",
+                    message=f"Failed to pin project artifacts to storage: {str(e)}",
                     details={"error": str(e)},
                 )
         elif any(a.ipfs_cid for a in found_artifacts):
