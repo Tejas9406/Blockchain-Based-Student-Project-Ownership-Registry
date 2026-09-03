@@ -6,17 +6,20 @@ export interface UploadArtifactParams {
   artifactCategory?: ArtifactCategory;
   projectId?: string;
   versionId?: string;
+  onUploadProgress?: (progressEvent: { loaded: number; total?: number }) => void;
 }
 
 export const artifactService = {
   /**
    * Uploads an artifact file (POST /api/v1/artifacts/upload) via multipart/form-data.
+   * Includes incremental streaming, file size checking, and real upload progress callbacks.
    */
   async uploadArtifact({
     file,
     artifactCategory = 'OTHER',
     projectId,
     versionId,
+    onUploadProgress,
   }: UploadArtifactParams): Promise<ArtifactResponse> {
     const formData = new FormData();
     formData.append('file', file);
@@ -36,6 +39,7 @@ export const artifactService = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress,
       }
     );
     return response.data.data;

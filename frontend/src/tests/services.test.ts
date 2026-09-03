@@ -161,7 +161,7 @@ describe('API Service Layers', () => {
   });
 
   describe('artifactService', () => {
-    it('calls POST /artifacts/upload with multipart form data', async () => {
+    it('calls POST /artifacts/upload with multipart form data and progress callback', async () => {
       const mockPost = vi.spyOn(apiClient, 'post').mockResolvedValue({
         data: {
           success: true,
@@ -170,17 +170,22 @@ describe('API Service Layers', () => {
         },
       } as any);
 
+      const onProgress = vi.fn();
       const mockFile = new File(['dummy content'], 'paper.pdf', { type: 'application/pdf' });
       const result = await artifactService.uploadArtifact({
         file: mockFile,
         artifactCategory: 'DOCUMENTATION',
         projectId: 'PRJ-123',
+        onUploadProgress: onProgress,
       });
 
       expect(mockPost).toHaveBeenCalledWith(
         '/artifacts/upload',
         expect.any(FormData),
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: onProgress,
+        }
       );
       expect(result.public_id).toBe('ART-123');
     });

@@ -184,7 +184,8 @@ describe('React Router & Auth Route Guards', () => {
         </MemoryRouter>
       );
 
-      expect(await screen.findByRole('heading', { name: /Project Artifacts & File Ingestion/i })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: /Project 123 Workspace/i })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: /Ingested Artifacts/i })).toBeInTheDocument();
     });
 
     it('renders ProjectVersionsPage on "/projects/:projectId/versions" when authenticated', async () => {
