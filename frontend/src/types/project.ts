@@ -39,23 +39,33 @@ export interface ProjectCreateRequest {
   visibility?: 'PUBLIC' | 'INSTITUTIONAL' | 'PRIVATE';
 }
 
+export type ProjectMemberRole = MemberRole;
+
+export interface ProjectMemberUser {
+  public_id: string;
+  email: string;
+  full_name: string;
+  institution_id?: string | null;
+  institution_name?: string | null;
+  department?: string | null;
+  role: UserRole | string;
+  wallet_address?: string | null;
+  is_verified?: boolean;
+  created_at?: string;
+}
+
 export interface ProjectMemberItem {
-  user: {
-    public_id: string;
-    email: string;
-    full_name: string;
-    role: UserRole;
-    department?: string | null;
-  };
-  role_in_project: MemberRole;
-  contribution_percentage: number;
+  user: ProjectMemberUser;
+  role_in_project: ProjectMemberRole;
+  contribution_percentage?: number | null;
   is_owner: boolean;
-  joined_at: string;
+  joined_at?: string | null;
 }
 
 export interface ProjectMemberCreateRequest {
-  user_email_or_id: string;
-  role_in_project: MemberRole;
+  user_public_id?: string;
+  email?: string;
+  role_in_project?: ProjectMemberRole;
   contribution_percentage?: number;
 }
 

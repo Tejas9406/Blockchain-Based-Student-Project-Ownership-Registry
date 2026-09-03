@@ -8,7 +8,6 @@ import {
   Tag,
   Building,
   User,
-  Users,
   Clock,
   RefreshCw,
   Copy,
@@ -31,6 +30,7 @@ import {
   VisibilityBadge,
   AnchoringBadge,
 } from '../../components/projects/ProjectStatusBadge';
+import { ProjectTeamSection } from '../../components/projects/ProjectTeamSection';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { ErrorBanner } from '../../components/ui/ErrorBanner';
 
@@ -292,60 +292,14 @@ export const ProjectDetailPage: React.FC = () => {
       </div>
 
       {/* Team Members Section */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Project Team & Mentors</h2>
-              <p className="text-xs text-slate-400">
-                Registered authors, student contributors, and faculty mentors.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {members.length === 0 ? (
-          <div className="p-6 text-center rounded-xl bg-slate-950/40 border border-slate-800/60 text-xs text-slate-400">
-            {project.owner ? (
-              <p>Primary Author: <span className="text-white font-semibold">{project.owner.full_name}</span> ({project.owner.public_id})</p>
-            ) : (
-              <p>No additional team members listed.</p>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {members.map((member) => (
-              <div
-                key={member.user.public_id}
-                className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex items-start justify-between gap-2"
-              >
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-white truncate">
-                      {member.user.full_name}
-                    </span>
-                    {member.is_owner && (
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        LEAD
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-400 truncate">{member.user.email}</p>
-                  <p className="text-[11px] font-mono text-slate-500">{member.role_in_project}</p>
-                </div>
-                {member.contribution_percentage > 0 && (
-                  <span className="text-xs font-mono font-semibold text-emerald-400 shrink-0">
-                    {member.contribution_percentage}%
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <ProjectTeamSection
+        projectId={projectId!}
+        project={project}
+        members={members}
+        onMemberAdded={(newMember) => {
+          setMembers((prev) => [...prev, newMember]);
+        }}
+      />
 
       {/* Milestone Versions Section */}
       <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-4">
