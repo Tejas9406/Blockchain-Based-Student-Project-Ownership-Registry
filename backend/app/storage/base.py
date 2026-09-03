@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import AsyncIterator
+from typing import AsyncIterator, Optional
 
 
 class StorageAdapter(ABC):
@@ -48,3 +48,20 @@ class StorageAdapter(ABC):
         Checks whether the artifact content exists in storage.
         """
         pass
+
+    async def add_bytes(
+        self, data: bytes, filename: Optional[str] = None, pin: bool = True
+    ) -> str:
+        """
+        Uploads raw bytes to storage and returns a content identifier (CID).
+        """
+        raise NotImplementedError("Storage adapter does not support add_bytes.")
+
+    async def add_directory(
+        self, files: dict[str, bytes], pin: bool = True
+    ) -> dict[str, str]:
+        """
+        Uploads multiple named files wrapped in a directory structure and returns
+        a mapping of filename -> CID, and 'root' -> root directory CID.
+        """
+        raise NotImplementedError("Storage adapter does not support add_directory.")

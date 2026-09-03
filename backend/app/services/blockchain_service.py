@@ -156,7 +156,7 @@ class BlockchainService:
             self._w3 = Web3(provider)
 
         # 2. Configure Relayer Account (Never store or log private keys)
-        raw_key = relayer_private_key or getattr(settings, "RELAYER_PRIVATE_KEY", "")
+        raw_key = relayer_private_key if relayer_private_key is not None else getattr(settings, "RELAYER_PRIVATE_KEY", "")
         self._relayer_account: Optional[Any] = None
         self._relayer_address: Optional[str] = None
 
@@ -175,7 +175,7 @@ class BlockchainService:
                 )
 
         # 3. Configure Smart Contract
-        raw_contract_address = contract_address or getattr(settings, "PROJECT_REGISTRY_CONTRACT_ADDRESS", "")
+        raw_contract_address = contract_address if contract_address is not None else getattr(settings, "PROJECT_REGISTRY_CONTRACT_ADDRESS", "")
         self._contract_address: Optional[str] = None
         self._contract: Optional[Any] = None
 

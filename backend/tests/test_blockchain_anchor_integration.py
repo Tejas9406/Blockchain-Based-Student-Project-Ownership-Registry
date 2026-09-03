@@ -143,6 +143,30 @@ def mock_blockchain_service():
         }
 
     service.register_project_version = AsyncMock(side_effect=mock_register)
+    service.get_project_version = MagicMock(return_value={
+        "record_id": 42,
+        "registration_id": "REG-2026-AAAAA",
+        "composite_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ipfs_root_cid": "bafybeic527ywh2k37pzn26oxbpxiynvxvxzvdvdg24k722jgyk33n65d3m",
+        "version_index": 1,
+        "lifecycle_stage": "DESIGN",
+        "author": SAMPLE_OWNER_WALLET,
+        "co_authors": [],
+        "anchored_timestamp": datetime.fromtimestamp(1788330000, tz=timezone.utc),
+        "block_number": 251,
+        "dispute_status": "NONE",
+        "exists": True,
+    })
+    service.verify_project_version = MagicMock(return_value={
+        "is_valid": True,
+        "anchored_timestamp": datetime.fromtimestamp(1788330000, tz=timezone.utc),
+        "ipfs_root_cid": "bafybeic527ywh2k37pzn26oxbpxiynvxvxzvdvdg24k722jgyk33n65d3m",
+        "author_wallet": SAMPLE_OWNER_WALLET,
+        "dispute_status": "NONE",
+        "match_confirmed": True,
+        "registration_id": "REG-2026-AAAAA",
+        "smart_contract_address": SAMPLE_CONTRACT_ADDR,
+    })
     set_blockchain_service(service)
     yield service
     set_blockchain_service(None)
@@ -472,7 +496,21 @@ def test_trustless_verification_of_newly_anchored_version(
     reg_id = ver_data["registration_id"]
     comp_hash = ver_data["composite_sha256"]
 
-    # Mock verify_project_version view call on smart contract
+    # Mock verify_project_version and get_project_version view calls on smart contract
+    mock_blockchain_service.get_project_version = MagicMock(return_value={
+        "record_id": 42,
+        "registration_id": reg_id,
+        "composite_hash": comp_hash,
+        "ipfs_root_cid": ver_data["ipfs_root_cid"],
+        "version_index": 1,
+        "lifecycle_stage": "DESIGN",
+        "author": SAMPLE_OWNER_WALLET,
+        "co_authors": [],
+        "anchored_timestamp": datetime.now(timezone.utc),
+        "block_number": 251,
+        "dispute_status": "NONE",
+        "exists": True,
+    })
     mock_blockchain_service.verify_project_version = MagicMock(return_value={
         "is_valid": True,
         "anchored_timestamp": datetime.now(timezone.utc),

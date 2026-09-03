@@ -96,3 +96,52 @@ class LocalStorageAdapter(StorageAdapter):
     async def exists(self, storage_key: str) -> bool:
         target_path = self._resolve_safe_path(storage_key)
         return target_path.is_file()
+
+    async def add_bytes(
+        self, data: bytes, filename: Optional[str] = None, pin: bool = True
+    ) -> str:
+        """
+        Stores artifact bytes under local CIDs directory and returns a deterministic CIDv1 string.
+        """
+        if not data:
+            from app.core.exceptions import ValidationException
+            raise ValidationException(
+                code="EMPTY_CONTENT_NOT_ALLOWED",
+                message="Cannot upload empty (0-byte) content to storage.",
+                details={"bytes": 0},
+            )
+        import base64
+        import hashlib
+        raw_hash = hashlib.sha256(data).digest()
+        raw_cid = b"\x01\x70\x12\x20" + raw_hash
+        cid = "b" + base64.b32encode(raw_cid).decode("ascii").lower().rstrip("=")
+        storage_key = f"cids/{cid}"
+        await self.write_chunk(storage_key, data, is_first_chunk=True)
+        return cid
+
+    async def add_directory(
+        self, files: dict[str, bytes], pin: bool = True
+    ) -> dict[str, str]:
+        """
+        Stores directory files locally and returns a mapping of filename -> CID, and 'root' -> root CID.
+        """
+        if not files:
+            from app.core.exceptions import ValidationException
+            raise ValidationException(
+                code="EMPTY_DIRECTORY_NOT_ALLOWED",
+                message="Cannot create storage directory without files.",
+            )
+        import base64
+        import hashlib
+        mapping: dict[str, str] = {}
+        combined = bytearray()
+        for name in sorted(files.keys()):
+            content = files[name]
+            cid = await self.add_bytes(content, filename=name, pin=pin)
+            mapping[name] = cid
+            combined.extend(name.encode("utf-8") + b":" + content)
+        raw_root = hashlib.sha256(bytes(combined)).digest()
+        raw_root_cid = b"\x01\x70\x12\x20" + raw_root
+        root_cid = "b" + base64.b32encode(raw_root_cid).decode("ascii").lower().rstrip("=")
+        mapping["root"] = root_cid
+        return mapping

@@ -42,6 +42,16 @@ class StorageService:
     async def exists(self, storage_key: str) -> bool:
         return await self._adapter.exists(storage_key=storage_key)
 
+    async def add_bytes(
+        self, data: bytes, filename: Optional[str] = None, pin: bool = True
+    ) -> str:
+        return await self._adapter.add_bytes(data=data, filename=filename, pin=pin)
+
+    async def add_directory(
+        self, files: dict[str, bytes], pin: bool = True
+    ) -> dict[str, str]:
+        return await self._adapter.add_directory(files=files, pin=pin)
+
 
 # Global storage service instance
 _global_storage_service: Optional[StorageService] = None
