@@ -9,6 +9,7 @@ import * as tokenUtils from '../utils/token';
 import { projectService } from '../services/project.service';
 import { verificationService } from '../services/verification.service';
 import { disputeService } from '../services/dispute.service';
+import { certificateService } from '../services/certificate.service';
 
 describe('React Router & Auth Route Guards', () => {
   beforeEach(() => {
@@ -65,6 +66,20 @@ describe('React Router & Auth Route Guards', () => {
       );
 
       expect(screen.getByRole('heading', { name: /Verifying Ownership Proof/i })).toBeInTheDocument();
+    });
+
+    it('renders CertificateDetailPage on "/certificates/:registrationId" as public route', () => {
+      vi.spyOn(certificateService, 'getCertificateMetadata').mockReturnValue(new Promise(() => {}));
+
+      render(
+        <MemoryRouter initialEntries={['/certificates/REG-2026-A8F92D']}>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </MemoryRouter>
+      );
+
+      expect(screen.getByRole('heading', { name: /Retrieving Ownership Certificate/i })).toBeInTheDocument();
     });
 
     it('renders NotFoundPage on unknown routes', () => {
@@ -258,6 +273,18 @@ describe('React Router & Auth Route Guards', () => {
 
     it('renders CertificateDetailPage on "/certificates/:registrationId" when authenticated', async () => {
       setupAuthenticatedUser();
+      vi.spyOn(certificateService, 'getCertificateMetadata').mockResolvedValue({
+        registration_id: 'REG-2026-A8F92D',
+        project_title: 'Test Project 123 Workspace',
+        version_tag: 'v1.0',
+        authors: ['Tejas Sharma'],
+        institution: 'NIT',
+        transaction_hash: '0x61c6092de432fa646d61f4086ef016512aa2dbdeda9a063e5c9dd7c484f944cb',
+        verification_url: 'https://registry.sih2026.edu/verify/REG-2026-A8F92D',
+        qr_code_svg_url: 'https://registry.sih2026.edu/api/v1/certificates/REG-2026-A8F92D/qr.svg',
+        pdf_download_url: 'https://registry.sih2026.edu/api/v1/certificates/REG-2026-A8F92D/download',
+        dispute_status: 'NONE',
+      });
 
       render(
         <MemoryRouter initialEntries={['/certificates/REG-2026-A8F92D']}>
@@ -267,7 +294,7 @@ describe('React Router & Auth Route Guards', () => {
         </MemoryRouter>
       );
 
-      expect(await screen.findByRole('heading', { name: /Ownership Certificate Preview/i })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: /Certificate of Project Ownership & Provenance/i })).toBeInTheDocument();
     });
   });
 });

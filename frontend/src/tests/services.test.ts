@@ -354,6 +354,19 @@ describe('API Service Layers', () => {
       expect(result.registration_id).toBe('REG-2026-A8F92D');
     });
 
+    it('calls GET /certificates/{registrationId}/download to stream PDF binary', async () => {
+      const mockBlob = new Blob(['mock-pdf-binary'], { type: 'application/pdf' });
+      const mockGet = vi.spyOn(apiClient, 'get').mockResolvedValue({
+        data: mockBlob,
+      } as any);
+
+      const result = await certificateService.downloadCertificatePdf('REG-2026-A8F92D');
+      expect(mockGet).toHaveBeenCalledWith('/certificates/REG-2026-A8F92D/download', {
+        responseType: 'blob',
+      });
+      expect(result).toBe(mockBlob);
+    });
+
     it('generates correct download and QR URLs', () => {
       const downloadUrl = certificateService.getCertificateDownloadUrl('REG-2026-A8F92D');
       const qrUrl = certificateService.getCertificateQrUrl('REG-2026-A8F92D');

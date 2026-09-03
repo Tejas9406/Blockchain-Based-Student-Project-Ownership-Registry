@@ -346,6 +346,20 @@ export const VerificationResultCard: React.FC<VerificationResultCardProps> = ({ 
           </div>
         </div>
       )}
+
+      {/* Action Navigation Footer */}
+      {is_valid && registration_id && (
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800 text-xs">
+          <span className="text-slate-400">Official verified cryptographic registration</span>
+          <Link
+            to={ROUTES.CERTIFICATES.DETAIL(registration_id)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold transition-colors"
+          >
+            <Award className="w-4 h-4 text-amber-400" />
+            <span>View Official Ownership Certificate</span>
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

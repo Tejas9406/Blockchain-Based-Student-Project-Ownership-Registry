@@ -28,6 +28,7 @@ export const AppRoutes: React.FC = () => {
         <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
         <Route path={ROUTES.VERIFICATION.PORTAL} element={<VerificationPortalPage />} />
         <Route path={ROUTES.VERIFICATION.DETAIL(':registrationId')} element={<VerificationDetailPage />} />
+        <Route path={ROUTES.CERTIFICATES.DETAIL(':registrationId')} element={<CertificateDetailPage />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
@@ -40,7 +41,6 @@ export const AppRoutes: React.FC = () => {
           <Route path={ROUTES.PROJECTS.VERSIONS(':projectId')} element={<ProjectVersionsPage />} />
           <Route path={ROUTES.DISPUTES.LIST} element={<DisputesPage />} />
           <Route path={ROUTES.DISPUTES.DETAIL(':disputeId')} element={<DisputeDetailPage />} />
-          <Route path={ROUTES.CERTIFICATES.DETAIL(':registrationId')} element={<CertificateDetailPage />} />
         </Route>
 
         {/* 404 Catch-All */}
