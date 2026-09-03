@@ -1,6 +1,7 @@
 // Project & Version domain types matching API_CONTRACT.md Modules 2, 3, 4 & FRONTEND_BACKEND_CONTRACT.md
 
 import { UserRole } from './auth';
+import { ArtifactCategory } from './artifact';
 
 export type LifecycleStage = 'IDEA' | 'DESIGN' | 'PROTOTYPE' | 'FINAL';
 export type ProjectStatus = 'ACTIVE' | 'ARCHIVED' | 'UNDER_DISPUTE';
@@ -26,6 +27,8 @@ export interface ProjectSummary {
   created_at: string;
   updated_at?: string;
 }
+
+export type ProjectDetail = ProjectSummary;
 
 export interface ProjectCreateRequest {
   title: string;
@@ -62,8 +65,8 @@ export interface ArtifactReference {
   file_type: string;
   file_size_bytes: number;
   sha256_hash: string;
-  ipfs_cid: string;
-  artifact_category: string;
+  ipfs_cid?: string | null;
+  artifact_category: ArtifactCategory;
   uploaded_at: string;
 }
 

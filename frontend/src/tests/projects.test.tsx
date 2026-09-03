@@ -420,8 +420,10 @@ describe('Projects Module Frontend Tests', () => {
       expect(screen.getByText('REG-2026-A8F92D')).toBeInTheDocument();
       expect(screen.getByText('Anchored')).toBeInTheDocument();
 
-      // Ensure future submodule links are not present
-      expect(screen.queryByRole('link', { name: /Manage Artifacts/i })).not.toBeInTheDocument();
+      // Artifacts navigation action
+      expect(screen.getByRole('link', { name: /Manage Artifacts/i })).toBeInTheDocument();
+
+      // Ensure future version management links are not present
       expect(screen.queryByRole('link', { name: /Milestone Versions/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: /View All Versions/i })).not.toBeInTheDocument();
     });

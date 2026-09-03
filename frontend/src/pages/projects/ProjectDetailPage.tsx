@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Copy,
   Check,
+  FileUp,
 } from 'lucide-react';
 import { projectService } from '../../services/project.service';
 import {
@@ -158,14 +159,24 @@ export const ProjectDetailPage: React.FC = () => {
           <span>Back to Projects</span>
         </Link>
 
-        <button
-          type="button"
-          onClick={fetchProjectDetails}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition-colors"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to={ROUTES.PROJECTS.ARTIFACTS(project.public_id)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 transition-colors"
+          >
+            <FileUp className="w-3.5 h-3.5" />
+            <span>Manage Artifacts</span>
+          </Link>
+
+          <button
+            type="button"
+            onClick={fetchProjectDetails}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Project Overview Card */}
