@@ -159,13 +159,21 @@ export const ProjectDetailPage: React.FC = () => {
           <span>Back to Projects</span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Link
             to={ROUTES.PROJECTS.ARTIFACTS(project.public_id)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition-colors"
           >
             <FileUp className="w-3.5 h-3.5" />
             <span>Manage Artifacts</span>
+          </Link>
+
+          <Link
+            to={ROUTES.PROJECTS.VERSIONS(project.public_id)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 transition-colors shadow-sm"
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>Milestones & Versions</span>
           </Link>
 
           <button
@@ -344,14 +352,29 @@ export const ProjectDetailPage: React.FC = () => {
               </p>
             </div>
           </div>
+
+          <Link
+            to={ROUTES.PROJECTS.VERSIONS(project.public_id)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition-colors"
+          >
+            <Layers className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Manage & Anchor</span>
+          </Link>
         </div>
 
         {versions.length === 0 ? (
-          <div className="p-8 text-center rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-2 text-xs text-slate-400">
+          <div className="p-8 text-center rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-3 text-xs text-slate-400">
             <p className="font-semibold text-slate-300">No Milestone Versions Recorded</p>
             <p>
               No milestone versions recorded yet for this project.
             </p>
+            <Link
+              to={ROUTES.PROJECTS.VERSIONS(project.public_id)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 transition-colors"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Create Initial Milestone</span>
+            </Link>
           </div>
         ) : (
           <div className="space-y-3">
