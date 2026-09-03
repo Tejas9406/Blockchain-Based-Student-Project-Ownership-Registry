@@ -96,8 +96,8 @@ describe('Projects Module Frontend Tests', () => {
 
       expect(screen.getByText(/Loading project catalog.../i)).toBeInTheDocument();
 
-      expect(await screen.findByRole('heading', { name: /Academic Project Catalog/i })).toBeInTheDocument();
-      expect(screen.getByText('Decentralized IPFS Academic Registry')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Academic Project Catalog/i })).toBeInTheDocument();
+      expect(await screen.findByText('Decentralized IPFS Academic Registry')).toBeInTheDocument();
       expect(screen.getByText('AI-Assisted Code Vulnerability Scanner')).toBeInTheDocument();
       expect(screen.getByText('PRJ-202608-99B12')).toBeInTheDocument();
       expect(screen.getByText('PRJ-202608-88A11')).toBeInTheDocument();

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Layers,
   Calendar,
@@ -13,8 +14,10 @@ import {
   HardDrive,
   ShieldCheck,
   Hash,
+  Award,
 } from 'lucide-react';
 import { ProjectVersionDetail } from '../../types';
+import { ROUTES } from '../../constants/routes';
 import { LifecycleBadge, AnchoringBadge } from './ProjectStatusBadge';
 
 export interface ProjectVersionCardProps {
@@ -74,23 +77,34 @@ export const ProjectVersionCard: React.FC<ProjectVersionCardProps> = ({
           <AnchoringBadge status={version.anchoring_status} />
 
           {version.registration_id && (
-            <span className="inline-flex items-center gap-1 text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-              <ShieldCheck className="w-3 h-3" />
-              <span>{version.registration_id}</span>
-              <button
-                type="button"
-                onClick={() => handleCopy(version.registration_id!, `reg-${version.public_id}`)}
-                aria-label="Copy registration ID"
-                className="hover:text-white transition-colors ml-0.5"
-                title="Copy Registration ID"
+            <>
+              <span className="inline-flex items-center gap-1 text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                <ShieldCheck className="w-3 h-3" />
+                <span>{version.registration_id}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(version.registration_id!, `reg-${version.public_id}`)}
+                  aria-label="Copy registration ID"
+                  className="hover:text-white transition-colors ml-0.5"
+                  title="Copy Registration ID"
+                >
+                  {copiedKey === `reg-${version.public_id}` ? (
+                    <Check className="w-3 h-3 text-emerald-300" />
+                  ) : (
+                    <Copy className="w-3 h-3 text-emerald-500 hover:text-emerald-300" />
+                  )}
+                </button>
+              </span>
+
+              <Link
+                to={ROUTES.CERTIFICATES.DETAIL(version.registration_id)}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition-colors"
+                title="View Official Certificate"
               >
-                {copiedKey === `reg-${version.public_id}` ? (
-                  <Check className="w-3 h-3 text-emerald-300" />
-                ) : (
-                  <Copy className="w-3 h-3 text-emerald-500 hover:text-emerald-300" />
-                )}
-              </button>
-            </span>
+                <Award className="w-3 h-3 text-amber-400" />
+                <span>Certificate</span>
+              </Link>
+            </>
           )}
         </div>
 
