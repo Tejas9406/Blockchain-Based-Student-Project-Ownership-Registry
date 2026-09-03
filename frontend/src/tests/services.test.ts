@@ -158,6 +158,31 @@ describe('API Service Layers', () => {
       );
       expect(result.registration_id).toBe('REG-2026-ABCDE');
     });
+
+    it('calls GET /projects/{id}/versions to list version snapshots', async () => {
+      const mockGet = vi.spyOn(apiClient, 'get').mockResolvedValue({
+        data: {
+          success: true,
+          data: [
+            {
+              public_id: 'VER-1',
+              version_index: 1,
+              version_tag: 'v1.0',
+              lifecycle_stage: 'IDEA',
+              title: 'Concept Paper',
+              anchoring_status: 'ANCHORED',
+              created_at: '2026-09-01T10:00:00.000Z',
+            },
+          ],
+          meta: { timestamp: '2026-08-31T18:50:00.000Z' },
+        },
+      } as any);
+
+      const result = await projectService.listVersions('PRJ-123');
+      expect(mockGet).toHaveBeenCalledWith('/projects/PRJ-123/versions');
+      expect(result.length).toBe(1);
+      expect(result[0].version_tag).toBe('v1.0');
+    });
   });
 
   describe('artifactService', () => {

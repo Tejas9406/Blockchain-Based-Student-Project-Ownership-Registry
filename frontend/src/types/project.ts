@@ -81,14 +81,14 @@ export interface BlockchainRecordSummary {
 
 export interface ProjectVersionDetail {
   public_id: string;          // "VER-202608-41C88"
-  registration_id: string;    // "REG-2026-A8F92D"
+  registration_id?: string | null;    // "REG-2026-A8F92D"
   version_index: number;
   version_tag: string;        // "v1.0"
   lifecycle_stage: LifecycleStage;
   title: string;
   description?: string | null;
-  composite_sha256: string;
-  ipfs_root_cid: string;
+  composite_sha256?: string | null;
+  ipfs_root_cid?: string | null;
   anchoring_status: AnchoringStatus;
   dispute_status: DisputeStatus;
   artifacts?: ArtifactReference[];

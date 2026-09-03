@@ -190,6 +190,19 @@ describe('React Router & Auth Route Guards', () => {
 
     it('renders ProjectVersionsPage on "/projects/:projectId/versions" when authenticated', async () => {
       setupAuthenticatedUser();
+      vi.spyOn(projectService, 'getProject').mockResolvedValue({
+        public_id: 'PRJ-123',
+        slug: 'test-project',
+        title: 'Test Project 123 Workspace',
+        category: 'AI',
+        department: 'CSE',
+        academic_year: '2025-2026',
+        current_lifecycle_stage: 'DESIGN',
+        visibility: 'PUBLIC',
+        status: 'ACTIVE',
+        created_at: '2026-08-31T18:50:00.000Z',
+      });
+      vi.spyOn(projectService, 'listVersions').mockResolvedValue([]);
 
       render(
         <MemoryRouter initialEntries={['/projects/PRJ-123/versions']}>
@@ -199,7 +212,7 @@ describe('React Router & Auth Route Guards', () => {
         </MemoryRouter>
       );
 
-      expect(await screen.findByRole('heading', { name: /Project Milestones & Version Snapshots/i })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: /Milestone Snapshots & Anchoring History/i })).toBeInTheDocument();
     });
 
     it('renders DisputesPage on "/disputes" when authenticated', async () => {
