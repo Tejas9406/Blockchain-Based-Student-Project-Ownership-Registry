@@ -183,6 +183,53 @@ describe('API Service Layers', () => {
       expect(result.length).toBe(1);
       expect(result[0].version_tag).toBe('v1.0');
     });
+
+    it('calls GET /projects/{id}/members to retrieve team members', async () => {
+      const mockGet = vi.spyOn(apiClient, 'get').mockResolvedValue({
+        data: {
+          success: true,
+          data: [
+            {
+              user: { public_id: 'USR-1', email: 'owner@sih2026.edu', full_name: 'Lead Author' },
+              role_in_project: 'LEAD',
+              contribution_percentage: 50.0,
+              is_owner: true,
+            },
+          ],
+          meta: { timestamp: '2026-08-31T18:50:00.000Z' },
+        },
+      } as any);
+
+      const result = await projectService.listMembers('PRJ-123');
+      expect(mockGet).toHaveBeenCalledWith('/projects/PRJ-123/members');
+      expect(result.length).toBe(1);
+      expect(result[0].user.full_name).toBe('Lead Author');
+    });
+
+    it('calls POST /projects/{id}/members to add a project contributor', async () => {
+      const mockPost = vi.spyOn(apiClient, 'post').mockResolvedValue({
+        data: {
+          success: true,
+          data: {
+            user: { public_id: 'USR-2', email: 'contributor@sih2026.edu', full_name: 'Contributor 1' },
+            role_in_project: 'CONTRIBUTOR',
+            contribution_percentage: 25.0,
+            is_owner: false,
+          },
+          meta: { timestamp: '2026-08-31T18:50:00.000Z' },
+        },
+      } as any);
+
+      const payload = {
+        email: 'contributor@sih2026.edu',
+        role_in_project: 'CONTRIBUTOR' as const,
+        contribution_percentage: 25.0,
+      };
+
+      const result = await projectService.addMember('PRJ-123', payload);
+      expect(mockPost).toHaveBeenCalledWith('/projects/PRJ-123/members', payload);
+      expect(result.role_in_project).toBe('CONTRIBUTOR');
+    });
   });
 
   describe('artifactService', () => {
