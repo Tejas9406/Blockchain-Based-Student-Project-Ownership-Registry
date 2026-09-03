@@ -115,7 +115,12 @@ export const DisputeDetailPage: React.FC = () => {
 
       {/* Dispute Dossier Details */}
       {!isLoading && !error && dispute && (
-        <DisputeDetailDossier dispute={dispute} />
+        <DisputeDetailDossier
+          dispute={dispute}
+          onDisputeUpdated={(updated) => {
+            setDispute(updated);
+          }}
+        />
       )}
     </div>
   );

@@ -17,12 +17,14 @@ import {
 import { DisputeDetailResponse } from '../../types';
 import { ROUTES } from '../../constants/routes';
 import { DisputeStatusBadge, DisputeTypeBadge } from './DisputeStatusBadge';
+import { AdminAdjudicationPanel } from './AdminAdjudicationPanel';
 
 export interface DisputeDetailDossierProps {
   dispute: DisputeDetailResponse;
+  onDisputeUpdated?: (updated: DisputeDetailResponse) => void;
 }
 
-export const DisputeDetailDossier: React.FC<DisputeDetailDossierProps> = ({ dispute }) => {
+export const DisputeDetailDossier: React.FC<DisputeDetailDossierProps> = ({ dispute, onDisputeUpdated }) => {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = (text: string, key: string) => {
@@ -259,6 +261,16 @@ export const DisputeDetailDossier: React.FC<DisputeDetailDossierProps> = ({ disp
           )}
         </div>
       )}
+
+      {/* Admin Adjudication Panel (Visible only to ADMIN role) */}
+      <AdminAdjudicationPanel
+        dispute={dispute}
+        onDisputeUpdated={(updated) => {
+          if (onDisputeUpdated) {
+            onDisputeUpdated(updated);
+          }
+        }}
+      />
 
       {/* Timeline Stepper */}
       <div className="pt-2 border-t border-slate-800/80 space-y-3">
