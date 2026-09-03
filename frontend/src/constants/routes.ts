@@ -18,6 +18,7 @@ export const ROUTES = {
   },
   DISPUTES: {
     LIST: '/disputes',
+    DETAIL: (disputeId: string = ':disputeId') => `/disputes/${disputeId}`,
   },
   CERTIFICATES: {
     DETAIL: (registrationId: string = ':registrationId') => `/certificates/${registrationId}`,

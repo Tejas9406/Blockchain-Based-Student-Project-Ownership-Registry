@@ -14,6 +14,7 @@ import {
   Copy,
   Check,
   FileUp,
+  AlertTriangle,
 } from 'lucide-react';
 import { projectService } from '../../services/project.service';
 import {
@@ -174,6 +175,14 @@ export const ProjectDetailPage: React.FC = () => {
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Milestones & Versions</span>
+          </Link>
+
+          <Link
+            to={`/disputes?projectId=${project.public_id}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-amber-400 border border-amber-500/20 transition-colors"
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>Disputes</span>
           </Link>
 
           <button

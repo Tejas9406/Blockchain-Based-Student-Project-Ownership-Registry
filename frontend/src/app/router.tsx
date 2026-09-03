@@ -15,6 +15,7 @@ import { ProjectVersionsPage } from '../pages/projects/ProjectVersionsPage';
 import { VerificationPortalPage } from '../pages/verification/VerificationPortalPage';
 import { VerificationDetailPage } from '../pages/verification/VerificationDetailPage';
 import { DisputesPage } from '../pages/disputes/DisputesPage';
+import { DisputeDetailPage } from '../pages/disputes/DisputeDetailPage';
 import { CertificateDetailPage } from '../pages/certificates/CertificateDetailPage';
 import { NotFoundPage } from '../pages/not-found/NotFoundPage';
 
@@ -38,6 +39,7 @@ export const AppRoutes: React.FC = () => {
           <Route path={ROUTES.PROJECTS.ARTIFACTS(':projectId')} element={<ProjectArtifactsPage />} />
           <Route path={ROUTES.PROJECTS.VERSIONS(':projectId')} element={<ProjectVersionsPage />} />
           <Route path={ROUTES.DISPUTES.LIST} element={<DisputesPage />} />
+          <Route path={ROUTES.DISPUTES.DETAIL(':disputeId')} element={<DisputeDetailPage />} />
           <Route path={ROUTES.CERTIFICATES.DETAIL(':registrationId')} element={<CertificateDetailPage />} />
         </Route>
 

@@ -291,6 +291,34 @@ describe('API Service Layers', () => {
       expect(result.status).toBe('OPEN');
     });
 
+    it('calls GET /disputes/{id} to retrieve a specific dispute', async () => {
+      const mockGet = vi.spyOn(apiClient, 'get').mockResolvedValue({
+        data: {
+          success: true,
+          data: { public_id: 'DSP-123', project_public_id: 'PRJ-123', status: 'OPEN' },
+          meta: { timestamp: '2026-08-31T18:50:00.000Z' },
+        },
+      } as any);
+
+      const result = await disputeService.getDispute('DSP-123');
+      expect(mockGet).toHaveBeenCalledWith('/disputes/DSP-123');
+      expect(result.public_id).toBe('DSP-123');
+    });
+
+    it('calls GET /disputes/project/{projectId} to list project disputes', async () => {
+      const mockGet = vi.spyOn(apiClient, 'get').mockResolvedValue({
+        data: {
+          success: true,
+          data: [{ public_id: 'DSP-123', project_public_id: 'PRJ-123', status: 'OPEN' }],
+          meta: { timestamp: '2026-08-31T18:50:00.000Z' },
+        },
+      } as any);
+
+      const result = await disputeService.listProjectDisputes('PRJ-123');
+      expect(mockGet).toHaveBeenCalledWith('/disputes/project/PRJ-123');
+      expect(result.length).toBe(1);
+    });
+
     it('calls PATCH /admin/disputes/{id}/adjudicate to resolve a dispute', async () => {
       const mockPatch = vi.spyOn(apiClient, 'patch').mockResolvedValue({
         data: {
