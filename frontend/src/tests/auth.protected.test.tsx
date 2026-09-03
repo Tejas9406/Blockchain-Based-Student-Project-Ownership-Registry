@@ -83,11 +83,9 @@ describe('Protected Routes & Navigation Flow', () => {
       </MemoryRouter>
     );
 
-    expect(
-      await screen.findByText(/Student Project Registry Dashboard/i)
-    ).toBeInTheDocument();
-    expect(screen.getByText('Tejas Sharma')).toBeInTheDocument();
-    expect(screen.getByText('STUDENT')).toBeInTheDocument();
+    expect(await screen.findByText(/Welcome back,/i)).toBeInTheDocument();
+    expect(screen.getAllByText('Tejas Sharma').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('STUDENT').length).toBeGreaterThanOrEqual(1);
   });
 
   it('logs out user via header and redirects to "/login"', async () => {
@@ -109,9 +107,7 @@ describe('Protected Routes & Navigation Flow', () => {
       </MemoryRouter>
     );
 
-    expect(
-      await screen.findByText(/Student Project Registry Dashboard/i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Welcome back,/i)).toBeInTheDocument();
 
     const logoutButton = screen.getByRole('button', { name: /Log Out/i });
     fireEvent.click(logoutButton);

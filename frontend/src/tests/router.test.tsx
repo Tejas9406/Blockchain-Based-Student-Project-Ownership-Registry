@@ -98,7 +98,7 @@ describe('React Router & Auth Route Guards', () => {
         </MemoryRouter>
       );
 
-      expect(await screen.findByText(/Student Project Registry Dashboard/i)).toBeInTheDocument();
+      expect(await screen.findByText(/Welcome back,/i)).toBeInTheDocument();
     });
 
     it('renders ProjectsListPage on "/projects" when authenticated', async () => {
